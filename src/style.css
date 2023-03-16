@@ -2,6 +2,7 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  --gameWidth: 80%;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -20,20 +21,20 @@ body {
   place-items: center;
   min-width: 100vw;
   min-height: 100vh;
+  font-family: "8bitoperator Regular"
 }
 
 #app {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100vw;
   height: 100vh;
   padding: 0 1rem;
 }
 
 #battle {
-  height: 80%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -43,11 +44,49 @@ body {
 
 #terrain {
   border: 2px solid #fff;
-  width: 30%;
+  width: var(--gameWidth);
+  aspect-ratio: 15/1;
+  transition: all 0.5s ease;
+  padding: 1%;
+}
+
+#terrain.battleTerrain {
+  width: 20%;
   aspect-ratio: 1/1;
 }
 
 #menu {
   height: 20%;
-  width: 100%;
+  width: var(--gameWidth);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#menu img {
+  width: 10%;
+  cursor: pointer;
+}
+
+#info {
+  width: var(--gameWidth);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10%;
+}
+
+#karma,
+#life {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#lifebar {
+  width: 30%;
+  height: 100%;
+  background-color: #fff;
 }
