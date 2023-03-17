@@ -1,5 +1,6 @@
 import { EventListener } from "three";
 import { EventCreator } from "types";
+import { setupDice } from "./Dices";
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -8,6 +9,7 @@ export let lastTimeout: number;
 
 export async function writeText(phrase: string) {
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
+  terrain.innerHTML = "";
   let p = document.createElement("p");
   terrain.appendChild(p);
   if (lastTimeout) clearTimeout(lastTimeout);
@@ -40,9 +42,7 @@ export const randomNumber = (max: number, min: number = 0) => {
 };
 declare var phrases: string[];
 export function selectOption(target: HTMLImageElement | number[]) {
-  const terrain = document.querySelector("#terrain") as HTMLDivElement;
   const menu = document.querySelector("#menu") as HTMLDivElement;
-  let p = document.createElement("p");
   let value = "";
   if (target instanceof HTMLImageElement) {
     value = target.id;
@@ -54,31 +54,45 @@ export function selectOption(target: HTMLImageElement | number[]) {
   switch (value) {
     // Fight
     case "fight": {
-      terrain.innerHTML = "";
-      terrain.appendChild(p);
-      writeText(phrases[randomNumber(phrases.length - 1)]);
+      toBattle();
+      // terrain.innerHTML = "";
+      // terrain.appendChild(p);
+      // writeText(phrases[randomNumber(phrases.length - 1)]);
       break;
     }
     // Act
     case "act": {
-      terrain.innerHTML = "";
-      terrain.appendChild(p);
       writeText("* You can't do that yet.");
       break;
     }
     // Item
     case "item": {
-      terrain.innerHTML = "";
-      terrain.appendChild(p);
       writeText("* You can't do that yet.");
       break;
     }
     // Mercy
     case "mercy": {
-      terrain.innerHTML = "";
-      terrain.appendChild(p);
       writeText("* You can't do that yet.");
       break;
     }
   }
+}
+
+export async function toBattle() {
+  const terrain = document.querySelector("#terrain") as HTMLDivElement;
+  const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--game-width");
+  terrain.innerHTML = "";
+  const animation = terrain.animate([{ width: gameWidth }, { width: "40%" }], {
+    duration: 500,
+    fill: "forwards",
+    easing: "ease-in-out"
+  });
+  await animation.finished;
+  setupDice();
+}
+
+export function toMenu() {
+  const terrain = document.querySelector("#terrain") as HTMLDivElement;
+  terrain.style.width = "var(--game-width)";
+  writeText(phrases[randomNumber(phrases.length - 1)]);
 }
