@@ -5,4 +5,8 @@ declare module "types" {
     target?: CSSselector
   ) => void;
   export type CSSselector = keyof HTMLElementTagNameMap | `.${string}` | `#${string}`;
+  export type CANNONEvent = {
+    type: "sleepy" | "sleep";
+    target: CANNON.Body;
+  };
 }

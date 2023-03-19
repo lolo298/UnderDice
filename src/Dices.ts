@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { boundingBoxHelper } from "three/examples/jsm/helpers/boundingBoxHelper";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as CANNON from "cannon-es";
+import { CANNONEvent } from "types";
 
 export async function setupDice() {
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   const canvas = document.createElement("canvas");
+  canvas.classList.add("debug");
   terrain.appendChild(canvas);
   const threeData = await setup(terrain);
   HELPERS(threeData);
@@ -19,12 +22,13 @@ async function setup(terrain: HTMLDivElement) {
   const height = terrain.clientHeight - paddingHeight;
   const canva = document.querySelector("#terrain canvas") as HTMLCanvasElement;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
-  camera.position.y = 1000;
+  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
+  camera.position.y = 20;
   const lights = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(lights);
-  const renderer = new THREE.WebGLRenderer({ canvas: canva });
+  const renderer = new THREE.WebGLRenderer({ canvas: canva, antialias: true });
   renderer.setSize(width, height);
+  renderer.setPixelRatio(window.devicePixelRatio);
 
   const world = setupPhysics();
   const contactMaterial = new CANNON.ContactMaterial(
@@ -37,6 +41,7 @@ async function setup(terrain: HTMLDivElement) {
   world.addContactMaterial(contactMaterial);
   const ground = await addGround(scene, world, contactMaterial);
   const dice = await addDice(scene, world, contactMaterial);
+  addWalls(scene, world);
   const btn = document.createElement("button");
   btn.innerHTML = "Add impulse";
   btn.addEventListener("click", () => {
@@ -51,7 +56,7 @@ async function setup(terrain: HTMLDivElement) {
     renderer.render(scene, camera);
   }
   animate();
-  return { scene, camera, renderer };
+  return { scene, camera, renderer, dice: dice.dice };
 }
 
 function setupPhysics() {
@@ -69,7 +74,7 @@ async function addDice(
   //* setup dice model
   const dice = await loadGLTF("dice.glb");
   if (!dice) throw new Error("dice not loaded");
-  const diceSize = 70;
+  const diceSize = 1;
   scene.add(dice);
   dice.position.set(0, 0, 0);
   dice.scale.set(diceSize, diceSize, diceSize);
@@ -85,13 +90,11 @@ async function addDice(
     sleepTimeLimit: 1
   });
   world.addBody(diceBody);
-  diceBody.position.set(-700, 700, 0);
+  diceBody.position.set(0, 0, 0);
 
   console.log("added dice");
 
-  diceBody.addEventListener("sleepy", (e) => {
-    console.log("sleepy", e);
-  });
+  diceBody.addEventListener("sleepy", getDiceValue);
 
   dice.addEventListener("sleep", (e) => {
     console.log("sleep", e);
@@ -106,7 +109,7 @@ async function addGround(
   contactMaterial: CANNON.ContactMaterial
 ) {
   const geo = new THREE.PlaneGeometry(1000, 1000);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const material = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
   const ground = new THREE.Mesh(geo, material);
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
@@ -119,7 +122,7 @@ async function addGround(
     type: CANNON.Body.STATIC
   });
   world.addBody(groundBody);
-  groundBody.position.set(0, -100, 0);
+  groundBody.position.set(0, 0, 0);
   groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 
   return { ground, groundBody, id };
@@ -141,15 +144,22 @@ function addDebugCube(scene: THREE.Scene) {
 function HELPERS({
   scene,
   camera,
-  renderer
+  renderer,
+  dice
 }: {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
+  dice: THREE.Group;
 }) {
   const controls = new OrbitControls(camera, renderer.domElement);
   const axesHelper = new THREE.AxesHelper(200);
   scene.add(axesHelper);
+  const diceAxesHelper = new THREE.AxesHelper(5);
+  if (dice) {
+    dice.add(diceAxesHelper);
+    addDebugDot(dice, { x: -0.8, y: -1, z: 0 });
+  }
 }
 
 function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number) {
@@ -162,10 +172,98 @@ function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number)
 
 function throwDice(dice: CANNON.Body) {
   console.log("throwing dice");
-  //the dice have a mass of 0, so they are static. We need to give them a mass to be able to throw them
-  dice.mass = 5;
-  dice.updateMassProperties();
-  console.log(dice.mass);
-  dice.applyImpulse(new CANNON.Vec3(500, 0, 0), new CANNON.Vec3(0, 70, 50));
+  console.log("dice size: ", dice.shapes[0]);
+  dice.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(-0.8, -1, 0));
   // world.frictionGravity = new CANNON.Vec3(10, 10, 10);
+}
+
+function getDiceValue(e: CANNONEvent) {
+  console.log("sleepy", e);
+}
+
+function addDebugDot(elem: THREE.Group, pos: { x: number; y: number; z: number }) {
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1),
+    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+  );
+  dot.position.set(pos.x, pos.y, pos.z);
+  elem.add(dot);
+}
+
+function addWalls(scene: THREE.Scene, world: CANNON.World) {
+  const wallLeft = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Plane(),
+    type: CANNON.Body.STATIC
+  });
+  world.addBody(wallLeft);
+  wallLeft.position.set(-20, 0, 0);
+  wallLeft.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
+
+  const wallLeftMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 100, 100),
+    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+  );
+  //@ts-ignore
+  wallLeftMesh.position.copy(wallLeft.position);
+  //@ts-ignore
+  wallLeftMesh.quaternion.copy(wallLeft.quaternion);
+  scene.add(wallLeftMesh);
+
+  const wallRight = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Plane(),
+    type: CANNON.Body.STATIC
+  });
+  world.addBody(wallRight);
+  wallRight.position.set(20, 0, 0);
+  wallRight.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
+
+  const wallRightMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+  );
+  //@ts-ignore
+  wallRightMesh.position.copy(wallRight.position);
+  //@ts-ignore
+  wallRightMesh.quaternion.copy(wallRight.quaternion);
+  scene.add(wallRightMesh);
+
+  const wallTop = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Plane(),
+    type: CANNON.Body.STATIC
+  });
+  world.addBody(wallTop);
+  wallTop.position.set(0, 0, -10);
+  wallTop.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2);
+
+  const wallTopMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshBasicMaterial({ color: 0x0000ff })
+  );
+  //@ts-ignore
+  wallTopMesh.position.copy(wallTop.position);
+  //@ts-ignore
+  wallTopMesh.quaternion.copy(wallTop.quaternion);
+  scene.add(wallTopMesh);
+
+  const wallBottom = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Plane(),
+    type: CANNON.Body.STATIC
+  });
+  world.addBody(wallBottom);
+  wallBottom.position.set(0, 0, 10);
+  wallBottom.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2);
+
+  const wallBottomMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshBasicMaterial({ color: 0xffff00 })
+  );
+  //@ts-ignore
+  wallBottomMesh.position.copy(wallBottom.position);
+  //@ts-ignore
+  wallBottomMesh.quaternion.copy(wallBottom.quaternion);
+  scene.add(wallBottomMesh);
 }

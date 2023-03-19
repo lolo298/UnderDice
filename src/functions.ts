@@ -1,4 +1,3 @@
-import { EventListener } from "three";
 import { EventCreator } from "types";
 import { setupDice } from "./Dices";
 
