@@ -16,8 +16,9 @@ declare module "types" {
     var GameInstance: Game;
     var phrases: string[];
   }
+  export type gameState = "attack" | "defend" | "idle" | "lose" | "win";
   export interface Game {
-    state: "attack" | "defend" | "idle";
+    state: gameState;
     attack(damage: number): void;
     defend(damage: number): void;
   }

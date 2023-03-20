@@ -1,4 +1,6 @@
+import { gameState } from "types";
 import Dice from "./Dices";
+import { randomNumber, toMenu, writeText } from "./functions";
 
 export default class Game {
   private sansLife: number = 20;
@@ -11,7 +13,7 @@ export default class Game {
   private attackSprite: HTMLImageElement;
   private damageSprite: HTMLImageElement;
   private terrain: HTMLDivElement;
-  public state: "attack" | "defend" | "idle" = "idle";
+  public state: gameState = "idle";
 
   public constructor() {
     const charaLifeBar = document.querySelector("#lifeBar #current");
@@ -98,40 +100,137 @@ export default class Game {
   }
   public defend(DefendingDamage: number): void {
     console.log("Defending");
-    this.charaLife -= 6 - DefendingDamage;
-    // this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
+    let damage = 6 - DefendingDamage;
     setTimeout(() => {
       this.terrain.innerHTML = "";
       const soul = document.createElement("img");
       soul.src = "./assets/spr_heart_battle_pl_0.png";
       soul.classList.add("soul");
       this.terrain.appendChild(soul);
-      this.spawnBlaster(soul);
+      this.spawnBlaster(soul, damage);
     }, 500);
   }
 
-  public spawnBlaster(soul: HTMLImageElement): void {
-    const soulRect = soul.getBoundingClientRect();
-    const soulCenter = {
-      x: soulRect.x + soulRect.width / 2,
-      y: soulRect.y + soulRect.height / 2
-    };
+  public async spawnBlaster(soul: HTMLImageElement, damage: number): Promise<void> {
+    this.terrain.classList.add("fight");
     const blaster = document.createElement("img");
     blaster.src = "./assets/sansAttacks/spr_gasterblaster_0.png";
     blaster.classList.add("blaster");
     document.querySelector("#app")?.appendChild(blaster);
-    const blasterRect = blaster.getBoundingClientRect();
-    const blasterCenter = {
-      x: blasterRect.x + blasterRect.width / 2,
-      y: blasterRect.y + blasterRect.height / 2
-    };
-    var angleDeg =
-      (Math.atan2(soulCenter.y - blasterCenter.y, soulCenter.x - blasterCenter.x) * 180) / Math.PI;
-    let keyframes = [{ transform: "rotate(0)" }, { transform: `rotate(${angleDeg}deg)` }];
+    const laser = document.createElement("div");
+    laser.classList.add("laser");
+    document.querySelector("#app")?.appendChild(laser);
+
+    let keyframes = [
+      { transform: `scale(0) rotate(0) ` },
+      { transform: `scale(6) rotate(450deg)` } //rotate(${360 + angleDeg}deg)
+    ];
     let options = {
       duration: 1000,
-      iterations: 1
+      iterations: 1,
+      easing: "ease-in-out",
+      fill: "forwards" as "forwards"
     };
-    blaster.animate(keyframes, options);
+    let blasterAnimation = blaster.animate(keyframes, options);
+    await blasterAnimation.finished;
+    //@ts-ignore
+    keyframes = [{ maxWidth: "0%" }, { maxWidth: "100%" }];
+    options = {
+      duration: 400,
+      iterations: 1,
+      easing: "ease-in-out",
+      fill: "forwards" as "forwards"
+    };
+    if (damage === 0) {
+      var soulKeyframes = [
+        { transform: `translate(0,0) ` },
+        { transform: `translate(0, 800%)` } //rotate(${360 + angleDeg}deg)
+      ];
+      var soulOptions = {
+        duration: 300,
+        iterations: 1,
+        easing: "ease-in-out",
+        fill: "forwards" as "forwards"
+      };
+    }
+    const fps = 30;
+    let frames = 0;
+    let img = 0;
+    const interval = setInterval(async () => {
+      if (frames >= 30) {
+        clearInterval(interval);
+        soul.animate(soulKeyframes, soulOptions);
+        let laserAnimation = laser.animate(keyframes, options);
+        setTimeout(() => {
+          this.charaLife += damage;
+          this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
+          this.checkEnd();
+          if (this.state === "lose") {
+            laserAnimation.pause();
+            this.toGameOver();
+          }
+        }, 400);
+        await laserAnimation.finished;
+        keyframes = [
+          //@ts-ignore
+          { transform: `scale(1, 1)`, opacity: 1 },
+          //@ts-ignore
+          { transform: `scale(1, 0.5)`, opacity: 0 }
+        ];
+        options = {
+          duration: 1000,
+          iterations: 1,
+          easing: "ease-in-out",
+          fill: "forwards" as "forwards"
+        };
+        laser.animate(keyframes, options);
+        await blaster.animate({ opacity: 0 }, { duration: 1000, iterations: 1 }).finished;
+        blaster.remove();
+        laser.remove();
+        soul.remove();
+        this.state = "idle";
+        toMenu();
+        return;
+      }
+      if (frames % 5 === 0) {
+        blaster.src = `./assets/sansAttacks/spr_gasterblaster_${img}.png`;
+        img++;
+      }
+      frames++;
+    }, 1000 / fps);
+  }
+
+  private checkEnd(): void {
+    if (this.charaLife <= 0) {
+      this.state = "lose";
+      return;
+    }
+    if (this.sansLife <= 0) {
+      this.state = "win";
+      return;
+    }
+  }
+  public toGameOver(): void {
+    let gameOverPhrases = [
+      "Don't lose hope",
+      "You cannot give up just yet ... CHARA! Stay determined!",
+      "Don't lose hope! CHARA! Stay determined!",
+      "Our fate rests upon you... CHARA! Stay determined...",
+      "CHARA, please... wake up! The fate of humans and monsters depends on you!",
+      "CHARA! You have to stay determined! You can't give up... You are the future of humans and monsters...",
+      "wake up! It's not over!",
+      "Please don't give up..."
+    ];
+    const endBackground = document.createElement("div");
+    endBackground.classList.add("endBackground");
+    document.querySelector("#app")?.appendChild(endBackground);
+    const endText = document.createElement("img");
+    endText.src = "./assets/spr_gameoverbg_0.png";
+    endText.classList.add("endText");
+    endBackground.appendChild(endText);
+    const endp = document.createElement("p");
+    endBackground.appendChild(endp);
+    endp.classList.add("endp");
+    writeText(gameOverPhrases[randomNumber(gameOverPhrases.length - 1)], ".endp");
   }
 }

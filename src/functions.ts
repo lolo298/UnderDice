@@ -1,4 +1,4 @@
-import { EventCreator } from "types";
+import { CSSselector, EventCreator } from "types";
 import throwDice from "./Dices";
 
 export function delay(ms: number) {
@@ -6,11 +6,13 @@ export function delay(ms: number) {
 }
 export let lastTimeout: number;
 
-export async function writeText(phrase: string) {
-  const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  terrain.innerHTML = "";
+export async function writeText(phrase: string, target: CSSselector) {
+  console.log(target);
+  const container = document.querySelector(target);
+  if (!container) throw new Error("container is not an HTMLElement");
+  container.innerHTML = "";
   let p = document.createElement("p");
-  terrain.appendChild(p);
+  container.appendChild(p);
   if (lastTimeout) clearTimeout(lastTimeout);
   for (let letter of phrase) {
     p.innerHTML += letter;
@@ -59,17 +61,17 @@ export function selectOption(target: HTMLImageElement | number[]) {
     }
     // Act
     case "act": {
-      writeText("* You can't do that yet.");
+      writeText("* You can't do that yet.", "#terrain");
       break;
     }
     // Item
     case "item": {
-      writeText("* You can't do that yet.");
+      writeText("* You can't do that yet.", "#terrain");
       break;
     }
     // Mercy
     case "mercy": {
-      writeText("* You can't do that yet.");
+      writeText("* You can't do that yet.", "#terrain");
       break;
     }
   }
@@ -79,9 +81,8 @@ export async function toBattle() {
   GameInstance.state = "attack";
   const battleEvent = createCustomEvent("toBattle");
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--game-width");
   terrain.innerHTML = "";
-  const animation = terrain.animate([{ width: gameWidth }, { width: "40%" }], {
+  const animation = terrain.animate([{ width: "40%" }], {
     duration: 500,
     fill: "forwards",
     easing: "ease-in-out"
@@ -93,8 +94,15 @@ export async function toBattle() {
 
 export function toMenu() {
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  terrain.style.width = "var(--game-width)";
-  writeText(phrases[randomNumber(phrases.length - 1)]);
+  const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--gameWidth");
+  terrain.animate([{ width: gameWidth }], {
+    duration: 500,
+    fill: "forwards",
+    easing: "ease-in-out"
+  });
+  terrain.classList.toggle("fight");
+  terrain.innerHTML = "";
+  writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
 }
 
 export function createCustomEvent(eventName: string) {

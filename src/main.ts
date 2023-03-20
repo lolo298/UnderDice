@@ -19,7 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 globalThis.phrases = [
   "* You felt your sins crawling on your back.",
-  "* Your filled with determination"
+  "* You felt your sins crawling on your neck.",
+  "* Your filled with determination",
+  "* You feel like  your gonna have a bad time.",
+  "* Reading this doesn't seem like the best use of your time.",
+  "* Sans is preparing something."
 ];
 let phrases = globalThis.phrases;
 let menuSelect = [1, 0, 0, 0];
@@ -27,7 +31,7 @@ let timeoutRewrite: number;
 await delay(1000);
 // @ts-ignore
 window["phrases"] = phrases;
-writeText(phrases[0]);
+writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
 
 newEvent("keydown", handleKeyDown);
 newEvent("mousemove", handleMouseMove, "#menu");
