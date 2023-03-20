@@ -132,6 +132,25 @@ export default class Game {
       fill: "forwards" as "forwards"
     };
     let blasterAnimation = blaster.animate(keyframes, options);
+    const fps = 60;
+    let frames = 0;
+    let img = 0;
+    await new Promise((r) => {
+      let interval = setInterval(() => {
+        if (frames >= 60) {
+          clearInterval(interval);
+          this.sansSprite.src = "./assets/Sans_idle.gif";
+          this.sansSprite.style.width = "100%";
+          r("done");
+          return;
+        }
+        if (frames % 15 === 0) {
+          this.sansSprite.src = `./assets/sansAttacks/spr_sansb_handdown_${img}.png`;
+          img++;
+        }
+        frames++;
+      }, 1000 / fps);
+    });
     await blasterAnimation.finished;
     //@ts-ignore
     keyframes = [{ maxWidth: "0%" }, { maxWidth: "100%" }];
@@ -153,16 +172,15 @@ export default class Game {
         fill: "forwards" as "forwards"
       };
     }
-    const fps = 30;
-    let frames = 0;
-    let img = 0;
-    const interval = setInterval(async () => {
+    frames = 0;
+    img = 0;
+    let interval = setInterval(async () => {
       if (frames >= 30) {
         clearInterval(interval);
         soul.animate(soulKeyframes, soulOptions);
         let laserAnimation = laser.animate(keyframes, options);
         setTimeout(() => {
-          this.charaLife += damage;
+          this.charaLife -= damage;
           this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
           this.checkEnd();
           if (this.state === "lose") {
