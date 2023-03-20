@@ -39,7 +39,6 @@ export const removeEvent: EventCreator = (type, callback, target) => {
 export const randomNumber = (max: number, min: number = 0) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
-declare var phrases: string[];
 export function selectOption(target: HTMLImageElement | number[]) {
   const menu = document.querySelector("#menu") as HTMLDivElement;
   let value = "";
@@ -49,7 +48,6 @@ export function selectOption(target: HTMLImageElement | number[]) {
   if (target instanceof Array) {
     value = menu.children[target.indexOf(1)].id;
   }
-
   switch (value) {
     // Fight
     case "fight": {
@@ -78,6 +76,8 @@ export function selectOption(target: HTMLImageElement | number[]) {
 }
 
 export async function toBattle() {
+  GameInstance.state = "attack";
+  const battleEvent = createCustomEvent("toBattle");
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--game-width");
   terrain.innerHTML = "";
@@ -88,10 +88,16 @@ export async function toBattle() {
   });
   await animation.finished;
   throwDice();
+  document.dispatchEvent(battleEvent);
 }
 
 export function toMenu() {
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   terrain.style.width = "var(--game-width)";
   writeText(phrases[randomNumber(phrases.length - 1)]);
+}
+
+export function createCustomEvent(eventName: string) {
+  const event = new Event(eventName);
+  return event;
 }

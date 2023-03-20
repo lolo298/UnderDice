@@ -85,8 +85,6 @@ async function addDice(
   world.addBody(diceBody);
   diceBody.position.set(0, 0, 0);
 
-  console.log("added dice");
-
   diceBody.addEventListener("sleepy", getDiceValue);
   diceBody.addEventListener("sleep", getDiceValue);
 
@@ -164,8 +162,6 @@ function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number)
 }
 
 function throwDice(dice: { diceBody: CANNON.Body; id: number; dice: THREE.Group } | CANNON.Body) {
-  console.log("throwing dice");
-  console.log(dice);
   const x = Math.random() * 2 - 1;
   const z = Math.random() * 2 - 1;
   if (dice instanceof CANNON.Body) {
@@ -177,8 +173,7 @@ function throwDice(dice: { diceBody: CANNON.Body; id: number; dice: THREE.Group 
 function getDiceValue(e: CANNONEvent) {
   const dice = e.target;
   dice.allowSleep = false;
-  console.log("sleepy");
-
+  GameInstance = globalThis.GameInstance;
   const euler = new CANNON.Vec3();
   dice.quaternion.toEuler(euler);
 
@@ -188,28 +183,25 @@ function getDiceValue(e: CANNONEvent) {
   let isMinusHalfPi = (angle: number) => Math.abs(0.5 * Math.PI + angle) < eps;
   let isPiOrMinusPi = (angle: number) =>
     Math.abs(Math.PI - angle) < eps || Math.abs(Math.PI + angle) < eps;
-  console.log({ x: euler.x, y: euler.y, z: euler.z });
   if (isZero(euler.z)) {
     if (isZero(euler.x)) {
-      console.log("result: 2");
+      GameInstance.state === "attack" ? GameInstance.attack(2) : GameInstance.defend(2);
     } else if (isHalfPi(euler.x)) {
-      console.log("result: 4");
+      GameInstance.state === "attack" ? GameInstance.attack(4) : GameInstance.defend(4);
     } else if (isMinusHalfPi(euler.x)) {
-      console.log("result: 3");
+      GameInstance.state === "attack" ? GameInstance.attack(3) : GameInstance.defend(3);
     } else if (isPiOrMinusPi(euler.x)) {
-      console.log("result: 5");
+      GameInstance.state === "attack" ? GameInstance.attack(5) : GameInstance.defend(5);
     } else {
-      console.log("None of the above");
       // landed on edge => wait to fall on side and fire the event again
       dice.allowSleep = true;
       throwDice(dice);
     }
   } else if (isHalfPi(euler.z)) {
-    console.log("result: 1");
+    GameInstance.state === "attack" ? GameInstance.attack(1) : GameInstance.defend(1);
   } else if (isMinusHalfPi(euler.z)) {
-    console.log("result: 6");
+    GameInstance.state === "attack" ? GameInstance.attack(6) : GameInstance.defend(6);
   } else {
-    console.log("None of the above");
     // landed on edge => wait to fall on side and fire the event again
     dice.allowSleep = true;
     throwDice(dice);

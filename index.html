@@ -9,7 +9,11 @@
   <body>
     <div id="app">
       <div id="battle">
-        <img src="assets/Sans_idle.gif" alt="Sans idle" />
+        <div  class="container">
+          <img src="" class="attack" id="slice"></img>
+          <img src="" class="attack" id="damage"></img>
+          <img src="assets/Sans_idle.gif" alt="Sans idle" id="sans" />
+        </div>
       </div>
       <div id="terrain"></div>
       <div id="info">
@@ -17,7 +21,10 @@
         <p>LV 19</p>
         <div id="life">
           <p>HP</p>
-          <div id="lifeBar"></div>
+          <div id="lifeBar">
+            <div id="current"></div>
+            <div id="max"></div>
+          </div>
         </div>
         <div id="karma">
           <p>KR</p>

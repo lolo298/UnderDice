@@ -48,6 +48,9 @@ body {
   height: 30%;
   transition: all 0.5s ease;
   padding: 1%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #terrain.battleTerrain {
@@ -103,4 +106,55 @@ canvas {
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+}
+
+.container {
+  position: relative;
+}
+
+.attack {
+  position: absolute;
+  top: 0;
+  left: 40%;
+  z-index: 100;
+}
+
+#damage {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 100;
+}
+
+#lifeBar {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#lifeBar #max {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  width: 100%;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #f00;
+}
+
+#lifeBar #current {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 5%;
+  width: 100%;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #ff0;
+}
+
+.blaster {
+  position: absolute;
+  top: 10%;
+  left: 90%;
 }

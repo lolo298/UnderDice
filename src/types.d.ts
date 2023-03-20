@@ -9,4 +9,16 @@ declare module "types" {
     type: "sleepy" | "sleep";
     target: CANNON.Body;
   };
+  export interface Window {
+    GameInstance?: Game;
+  }
+  declare global {
+    var GameInstance: Game;
+    var phrases: string[];
+  }
+  export interface Game {
+    state: "attack" | "defend" | "idle";
+    attack(damage: number): void;
+    defend(damage: number): void;
+  }
 }
