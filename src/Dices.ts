@@ -270,3 +270,22 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   wallBottomMesh.rotation.set(Math.PI, 0, Math.PI);
   scene.add(wallBottomMesh);
 }
+
+/* 
+TODO Get the camera's frustum
+const frustum = new THREE.Frustum();
+frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+
+TODO Calculate the bounding box of the frustum
+const box = new THREE.Box3();
+box.setFromFrustum(frustum);
+
+TODO Create the wall
+const wall = new THREE.Mesh(
+  new THREE.BoxGeometry(box.getSize().x, box.getSize().y, 10),
+  new THREE.MeshBasicMaterial({ color: 0xff0000 })
+);
+wall.position.copy(box.getCenter());
+wall.position.z -= 5; // move the wall slightly in front of the camera
+scene.add(wall);
+*/
