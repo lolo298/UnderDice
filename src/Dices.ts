@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { boundingBoxHelper } from "three/examples/jsm/helpers/boundingBoxHelper";
+import CannonDebugRenderer from "./utils/cannonDebugRenderer";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as CANNON from "cannon-es";
 import { CANNONEvent } from "types";
@@ -43,13 +43,16 @@ async function setup(terrain: HTMLDivElement) {
   const dice = await addDice(scene, world, contactMaterial);
   addWalls(scene, world);
   const btn = document.createElement("button");
+  btn.style.zIndex = "1000";
   btn.innerHTML = "Add impulse";
   btn.addEventListener("click", () => {
     throwDice(dice.diceBody);
   });
   document.querySelector("#app")?.appendChild(btn);
+  const cannonDebugRenderer = new CannonDebugRenderer(scene, world);
   function animate() {
     requestAnimationFrame(animate);
+    cannonDebugRenderer.update();
     updatePosition(scene, ground.groundBody, ground.id);
     updatePosition(scene, dice.diceBody, dice.id);
     world.fixedStep();
@@ -255,7 +258,7 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   });
   world.addBody(wallBottom);
   wallBottom.position.set(0, 0, 10);
-  wallBottom.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2);
+  wallBottom.quaternion.setFromEuler(0, Math.PI, 0);
 
   const wallBottomMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 50),
@@ -264,6 +267,6 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   //@ts-ignore
   wallBottomMesh.position.copy(wallBottom.position);
   //@ts-ignore
-  wallBottomMesh.quaternion.copy(wallBottom.quaternion);
+  wallBottomMesh.rotation.set(Math.PI, 0, Math.PI);
   scene.add(wallBottomMesh);
 }
