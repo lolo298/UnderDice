@@ -1,17 +1,15 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import CannonDebugRenderer from "./utils/cannonDebugRenderer";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as CANNON from "cannon-es";
 import { CANNONEvent } from "types";
 
-export async function setupDice() {
+export default async function Dice() {
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   const canvas = document.createElement("canvas");
-  canvas.classList.add("debug");
   terrain.appendChild(canvas);
   const threeData = await setup(terrain);
-  HELPERS(threeData);
+  // HELPERS(threeData);
+  throwDice(threeData.dice);
 }
 
 async function setup(terrain: HTMLDivElement) {
@@ -23,7 +21,8 @@ async function setup(terrain: HTMLDivElement) {
   const canva = document.querySelector("#terrain canvas") as HTMLCanvasElement;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
-  camera.position.y = 20;
+  camera.position.y = 20; //default: 20
+  camera.lookAt(0, 0, 0);
   const lights = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(lights);
   const renderer = new THREE.WebGLRenderer({ canvas: canva, antialias: true });
@@ -42,24 +41,15 @@ async function setup(terrain: HTMLDivElement) {
   const ground = await addGround(scene, world, contactMaterial);
   const dice = await addDice(scene, world, contactMaterial);
   addWalls(scene, world);
-  const btn = document.createElement("button");
-  btn.style.zIndex = "1000";
-  btn.innerHTML = "Add impulse";
-  btn.addEventListener("click", () => {
-    throwDice(dice.diceBody);
-  });
-  document.querySelector("#app")?.appendChild(btn);
-  const cannonDebugRenderer = new CannonDebugRenderer(scene, world);
   function animate() {
     requestAnimationFrame(animate);
-    cannonDebugRenderer.update();
     updatePosition(scene, ground.groundBody, ground.id);
     updatePosition(scene, dice.diceBody, dice.id);
     world.fixedStep();
     renderer.render(scene, camera);
   }
   animate();
-  return { scene, camera, renderer, dice: dice.dice };
+  return { scene, camera, renderer, dice };
 }
 
 function setupPhysics() {
@@ -98,10 +88,7 @@ async function addDice(
   console.log("added dice");
 
   diceBody.addEventListener("sleepy", getDiceValue);
-
-  dice.addEventListener("sleep", (e) => {
-    console.log("sleep", e);
-  });
+  diceBody.addEventListener("sleep", getDiceValue);
 
   return { dice, diceBody, id };
 }
@@ -153,15 +140,18 @@ function HELPERS({
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
-  dice: THREE.Group;
+  dice: {
+    dice: THREE.Group;
+    diceBody: CANNON.Body;
+    id: number;
+  };
 }) {
-  const controls = new OrbitControls(camera, renderer.domElement);
+  // const controls = new OrbitControls(camera, renderer.domElement);
   const axesHelper = new THREE.AxesHelper(200);
   scene.add(axesHelper);
   const diceAxesHelper = new THREE.AxesHelper(5);
   if (dice) {
-    dice.add(diceAxesHelper);
-    addDebugDot(dice, { x: -0.8, y: -1, z: 0 });
+    dice.dice.add(diceAxesHelper);
   }
 }
 
@@ -173,39 +163,89 @@ function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number)
   mesh.quaternion.copy(body.quaternion);
 }
 
-function throwDice(dice: CANNON.Body) {
+function throwDice(dice: { diceBody: CANNON.Body; id: number; dice: THREE.Group } | CANNON.Body) {
   console.log("throwing dice");
-  console.log("dice size: ", dice.shapes[0]);
-  dice.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(-0.8, -1, 0));
-  // world.frictionGravity = new CANNON.Vec3(10, 10, 10);
+  console.log(dice);
+  const x = Math.random() * 2 - 1;
+  const z = Math.random() * 2 - 1;
+  if (dice instanceof CANNON.Body) {
+    dice.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(x, -1, z));
+    return;
+  }
+  dice.diceBody.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(x, -1, z));
 }
-
 function getDiceValue(e: CANNONEvent) {
-  console.log("sleepy", e);
+  const dice = e.target;
+  dice.allowSleep = false;
+  console.log("sleepy");
+
+  const euler = new CANNON.Vec3();
+  dice.quaternion.toEuler(euler);
+
+  const eps = 0.1;
+  let isZero = (angle: number) => Math.abs(angle) < eps;
+  let isHalfPi = (angle: number) => Math.abs(angle - 0.5 * Math.PI) < eps;
+  let isMinusHalfPi = (angle: number) => Math.abs(0.5 * Math.PI + angle) < eps;
+  let isPiOrMinusPi = (angle: number) =>
+    Math.abs(Math.PI - angle) < eps || Math.abs(Math.PI + angle) < eps;
+  console.log({ x: euler.x, y: euler.y, z: euler.z });
+  if (isZero(euler.z)) {
+    if (isZero(euler.x)) {
+      console.log("result: 2");
+    } else if (isHalfPi(euler.x)) {
+      console.log("result: 4");
+    } else if (isMinusHalfPi(euler.x)) {
+      console.log("result: 3");
+    } else if (isPiOrMinusPi(euler.x)) {
+      console.log("result: 5");
+    } else {
+      console.log("None of the above");
+      // landed on edge => wait to fall on side and fire the event again
+      dice.allowSleep = true;
+      throwDice(dice);
+    }
+  } else if (isHalfPi(euler.z)) {
+    console.log("result: 1");
+  } else if (isMinusHalfPi(euler.z)) {
+    console.log("result: 6");
+  } else {
+    console.log("None of the above");
+    // landed on edge => wait to fall on side and fire the event again
+    dice.allowSleep = true;
+    throwDice(dice);
+  }
 }
 
-function addDebugDot(elem: THREE.Group, pos: { x: number; y: number; z: number }) {
+function addDebugDot(
+  elem: {
+    dice: THREE.Group;
+    diceBody: CANNON.Body;
+    id: number;
+  },
+  pos: { x: number; y: number; z: number }
+) {
   const dot = new THREE.Mesh(
     new THREE.SphereGeometry(0.1),
     new THREE.MeshBasicMaterial({ color: 0x00ff00 })
   );
   dot.position.set(pos.x, pos.y, pos.z);
-  elem.add(dot);
+  elem.dice.add(dot);
 }
 
 function addWalls(scene: THREE.Scene, world: CANNON.World) {
+  const color = 0x999999;
   const wallLeft = new CANNON.Body({
     mass: 0,
     shape: new CANNON.Plane(),
     type: CANNON.Body.STATIC
   });
   world.addBody(wallLeft);
-  wallLeft.position.set(-20, 0, 0);
+  wallLeft.position.set(-10, 0, 0);
   wallLeft.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
 
   const wallLeftMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(100, 100, 100),
-    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    new THREE.MeshBasicMaterial({ color })
   );
   //@ts-ignore
   wallLeftMesh.position.copy(wallLeft.position);
@@ -219,12 +259,12 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     type: CANNON.Body.STATIC
   });
   world.addBody(wallRight);
-  wallRight.position.set(20, 0, 0);
+  wallRight.position.set(10, 0, 0);
   wallRight.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 
   const wallRightMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 50),
-    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    new THREE.MeshBasicMaterial({ color })
   );
   //@ts-ignore
   wallRightMesh.position.copy(wallRight.position);
@@ -238,12 +278,12 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     type: CANNON.Body.STATIC
   });
   world.addBody(wallTop);
-  wallTop.position.set(0, 0, -10);
+  wallTop.position.set(0, 0, -5);
   wallTop.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2);
 
   const wallTopMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 50),
-    new THREE.MeshBasicMaterial({ color: 0x0000ff })
+    new THREE.MeshBasicMaterial({ color })
   );
   //@ts-ignore
   wallTopMesh.position.copy(wallTop.position);
@@ -257,12 +297,12 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     type: CANNON.Body.STATIC
   });
   world.addBody(wallBottom);
-  wallBottom.position.set(0, 0, 10);
+  wallBottom.position.set(0, 0, 5);
   wallBottom.quaternion.setFromEuler(0, Math.PI, 0);
 
   const wallBottomMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 50),
-    new THREE.MeshBasicMaterial({ color: 0xffff00 })
+    new THREE.MeshBasicMaterial({ color })
   );
   //@ts-ignore
   wallBottomMesh.position.copy(wallBottom.position);
@@ -270,22 +310,3 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   wallBottomMesh.rotation.set(Math.PI, 0, Math.PI);
   scene.add(wallBottomMesh);
 }
-
-/* 
-TODO Get the camera's frustum
-const frustum = new THREE.Frustum();
-frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-
-TODO Calculate the bounding box of the frustum
-const box = new THREE.Box3();
-box.setFromFrustum(frustum);
-
-TODO Create the wall
-const wall = new THREE.Mesh(
-  new THREE.BoxGeometry(box.getSize().x, box.getSize().y, 10),
-  new THREE.MeshBasicMaterial({ color: 0xff0000 })
-);
-wall.position.copy(box.getCenter());
-wall.position.z -= 5; // move the wall slightly in front of the camera
-scene.add(wall);
-*/

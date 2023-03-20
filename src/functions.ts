@@ -1,5 +1,5 @@
 import { EventCreator } from "types";
-import { setupDice } from "./Dices";
+import throwDice from "./Dices";
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -87,7 +87,7 @@ export async function toBattle() {
     easing: "ease-in-out"
   });
   await animation.finished;
-  setupDice();
+  throwDice();
 }
 
 export function toMenu() {
