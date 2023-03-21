@@ -15,11 +15,19 @@ declare module "types" {
   declare global {
     var GameInstance: Game;
     var phrases: string[];
+    var lastTimeout: number;
   }
   export type gameState = "attack" | "defend" | "idle" | "lose" | "win";
   export interface Game {
     state: gameState;
     attack(damage: number): void;
     defend(damage: number): void;
+    toGameOver(): void;
+    toWin(): Promise<void>;
+    getCharaLife(): number;
+    getCharaLifeMax(): number;
+    getSansLife(): number;
+    getSansLifeMax(): number;
+    spawnBlaster(soul: HTMLImageElement, damage: number): Promise<void>;
   }
 }

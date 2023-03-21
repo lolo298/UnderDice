@@ -9,6 +9,10 @@ export default async function Dice() {
   terrain.appendChild(canvas);
   const threeData = await setup(terrain);
   // HELPERS(threeData);
+  const attackText = document.createElement("p");
+  attackText.innerHTML = GameInstance.state === "attack" ? "You attack!" : "You defend!";
+  attackText.classList.add("actionText");
+  terrain.appendChild(attackText);
   throwDice(threeData.dice);
 }
 

@@ -1,6 +1,6 @@
 import { gameState } from "types";
 import Dice from "./Dices";
-import { randomNumber, toMenu, writeText } from "./functions";
+import { delay, randomNumber, toMenu, writeText } from "./functions";
 
 export default class Game {
   private sansLife: number = 20;
@@ -9,23 +9,25 @@ export default class Game {
   private charaLife: number = 20;
   private charaLifeMax: number = 20;
   private charaLifeBar: HTMLElement;
-  private charaLifeBarMax: HTMLElement;
+  private charaLifeCounter: HTMLElement;
   private attackSprite: HTMLImageElement;
   private damageSprite: HTMLImageElement;
   private terrain: HTMLDivElement;
+  private floweySprite: HTMLImageElement;
   public state: gameState = "idle";
 
   public constructor() {
     const charaLifeBar = document.querySelector("#lifeBar #current");
-    const charaLifeBarMax = document.querySelector("#lifeBar #max");
+    const charaLifeCounter = document.querySelector("#counter");
     const attackSprite = document.querySelector("#slice");
     const sansSprite = document.querySelector("#sans");
     const damageSprite = document.querySelector("#damage");
     const terrain = document.querySelector("#terrain");
+    const floweySprite = document.querySelector("#flowey");
     if (!(charaLifeBar instanceof HTMLElement))
       throw new Error("charaLifeBar is not an HTMLElement");
-    if (!(charaLifeBarMax instanceof HTMLElement))
-      throw new Error("charaLifeBarMax is not an HTMLElement");
+    if (!(charaLifeCounter instanceof HTMLElement))
+      throw new Error("charaLifeCounter is not an HTMLElement");
     if (!(attackSprite instanceof HTMLImageElement))
       throw new Error("attackSprite is not an HTMLImageElement");
     if (!(sansSprite instanceof HTMLImageElement))
@@ -33,12 +35,16 @@ export default class Game {
     if (!(damageSprite instanceof HTMLImageElement))
       throw new Error("damageSprite is not an HTMLImageElement");
     if (!(terrain instanceof HTMLDivElement)) throw new Error("terrain is not an HTMLDivElement");
+    if (!(floweySprite instanceof HTMLImageElement))
+      throw new Error("floweySprite is not an HTMLImageElement");
+
     this.charaLifeBar = charaLifeBar;
-    this.charaLifeBarMax = charaLifeBarMax;
+    this.charaLifeCounter = charaLifeCounter;
     this.attackSprite = attackSprite;
     this.sansSprite = sansSprite;
     this.damageSprite = damageSprite;
     this.terrain = terrain;
+    this.floweySprite = floweySprite;
   }
 
   public getCharaLife(): number {
@@ -89,18 +95,33 @@ export default class Game {
           iterations: 1,
           easing: "steps(3, end)"
         };
-        this.sansSprite.animate(keyframes, options);
+        var sansHitAnimation = this.sansSprite.animate(keyframes, options);
       }
       if (frames % 5 === 0) {
         this.attackSprite.src = `./assets/spr_slice_o_${attack}.png`;
         attack++;
+        if (attack === 3) {
+          this.checkEnd();
+          if (this.state === "win") {
+            // @ts-ignore
+            sansHitAnimation.pause();
+            this.sansSprite.src = "./assets/Sans_fatal_end.png";
+            this.damageSprite.remove();
+            this.attackSprite.remove();
+            this.terrain.innerHTML = "";
+            clearInterval(interval);
+            this.toWin();
+            return;
+          }
+        }
       }
       frames++;
     }, 1000 / fps);
   }
   public defend(DefendingDamage: number): void {
-    console.log("Defending");
     let damage = 6 - DefendingDamage;
+    console.log("dice result: " + DefendingDamage);
+    console.log("damage: " + damage);
     setTimeout(() => {
       this.terrain.innerHTML = "";
       const soul = document.createElement("img");
@@ -182,10 +203,13 @@ export default class Game {
         setTimeout(() => {
           this.charaLife -= damage;
           this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
+          this.charaLifeCounter.innerText = `${this.charaLife}/${this.charaLifeMax}`;
           this.checkEnd();
           if (this.state === "lose") {
             laserAnimation.pause();
+            clearInterval(interval);
             this.toGameOver();
+            return;
           }
         }, 400);
         await laserAnimation.finished;
@@ -206,6 +230,7 @@ export default class Game {
         blaster.remove();
         laser.remove();
         soul.remove();
+        if (this.state === "win" || this.state === "lose") return;
         this.state = "idle";
         toMenu();
         return;
@@ -242,13 +267,45 @@ export default class Game {
     const endBackground = document.createElement("div");
     endBackground.classList.add("endBackground");
     document.querySelector("#app")?.appendChild(endBackground);
-    const endText = document.createElement("img");
-    endText.src = "./assets/spr_gameoverbg_0.png";
-    endText.classList.add("endText");
+    const endOver = document.createElement("img");
+    endOver.src = "./assets/spr_gameoverbg_0.png";
+    endOver.classList.add("endOver");
+    endBackground.appendChild(endOver);
+    const endText = document.createElement("div");
     endBackground.appendChild(endText);
-    const endp = document.createElement("p");
-    endBackground.appendChild(endp);
-    endp.classList.add("endp");
-    writeText(gameOverPhrases[randomNumber(gameOverPhrases.length - 1)], ".endp");
+    endText.classList.add("endText");
+    const rng = randomNumber(gameOverPhrases.length - 1);
+    writeText(gameOverPhrases[rng], ".endText");
+  }
+  public async toWin(): Promise<void> {
+    document.querySelector(".blaster")?.remove();
+    document.querySelector(".laser")?.remove();
+    this.spawnFlowey();
+    const bubble = document.createElement("div");
+    bubble.classList.add("bubble");
+    document.querySelector(".flowey")?.appendChild(bubble);
+    await delay(1000);
+    bubble.style.backgroundImage = 'url("./assets/spr_blconabove_0.png")';
+    console.log("done");
+    writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble");
+  }
+
+  public spawnFlowey(): void {
+    const fps = 60;
+    let frames = 0;
+    let img = 0;
+    let imgPerFps = Math.ceil(fps / 9);
+    let interval = setInterval(() => {
+      if (frames >= 60) {
+        clearInterval(interval);
+        this.floweySprite.src = "./assets/flowey/Flowey_battle_talk.gif";
+        return;
+      }
+      if (frames % imgPerFps === 0) {
+        this.floweySprite.src = `./assets/flowey/spr_flowey_riseanim2_${img}.png`;
+        img++;
+      }
+      frames++;
+    }, 1000 / fps);
   }
 }

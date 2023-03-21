@@ -1,6 +1,7 @@
 import "./style.css";
 import "./fonts/stylesheet.css";
 import Game from "./Game";
+console.log("Hello World");
 import {
   delay,
   writeText,
@@ -12,11 +13,7 @@ import {
 } from "./functions";
 import { CSSselector } from "types";
 createCustomEvent("toBattle");
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM loaded");
-  console.log(document.querySelector("#sans"));
-  globalThis.GameInstance = new Game();
-});
+globalThis.GameInstance = new Game();
 globalThis.phrases = [
   "* You felt your sins crawling on your back.",
   "* You felt your sins crawling on your neck.",
@@ -43,6 +40,7 @@ const menuEventTargets = ["#menu", "#menu", null];
 
 function handleKeyDown(e: Event) {
   if (!(e instanceof KeyboardEvent)) return;
+  if (GameInstance.state === "attack" || GameInstance.state === "defend") return;
   const menu = document.querySelector("#menu") as HTMLDivElement;
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   let p = document.createElement("p");
@@ -132,20 +130,16 @@ function handleMouseMove(e: Event) {
       break;
     }
   }
-  console.log(menuSelect);
 }
 function handleClick(e: Event) {
   if (!(e instanceof MouseEvent)) return;
   const target = e.target;
   if (!(target instanceof HTMLImageElement)) return;
   if (!["fight", "act", "item", "mercy"].includes(target.id)) return;
-  console.log("click");
-  console.log(target.id);
   selectOption(target);
 }
 
 function unlockMenu() {
-  console.log("ToMenu event fired");
   const menu = document.querySelector("#menu") as HTMLDivElement;
   menu.style.pointerEvents = "auto";
   menuEvents.forEach((event, key) => {
@@ -154,7 +148,6 @@ function unlockMenu() {
   });
 }
 function lockMenu() {
-  console.log("ToBattle event fired");
   const menu = document.querySelector("#menu") as HTMLDivElement;
   menu.style.pointerEvents = "none";
   menuEvents.forEach((event, key) => {

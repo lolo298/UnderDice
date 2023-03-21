@@ -7,7 +7,7 @@ export function delay(ms: number) {
 export let lastTimeout: number;
 
 export async function writeText(phrase: string, target: CSSselector) {
-  console.log(target);
+  console.log(phrase);
   const container = document.querySelector(target);
   if (!container) throw new Error("container is not an HTMLElement");
   container.innerHTML = "";
@@ -54,9 +54,6 @@ export function selectOption(target: HTMLImageElement | number[]) {
     // Fight
     case "fight": {
       toBattle();
-      // terrain.innerHTML = "";
-      // terrain.appendChild(p);
-      // writeText(phrases[randomNumber(phrases.length - 1)]);
       break;
     }
     // Act
@@ -93,6 +90,8 @@ export async function toBattle() {
 }
 
 export function toMenu() {
+  if (GameInstance.state === "win" || GameInstance.state === "lose") return;
+  const menuEvent = createCustomEvent("toMenu");
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
   const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--gameWidth");
   terrain.animate([{ width: gameWidth }], {
@@ -103,6 +102,7 @@ export function toMenu() {
   terrain.classList.toggle("fight");
   terrain.innerHTML = "";
   writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
+  document.dispatchEvent(menuEvent);
 }
 
 export function createCustomEvent(eventName: string) {

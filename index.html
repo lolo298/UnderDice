@@ -2,42 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      #app {
+      }
+      h1 {
+        font-size: 10rem;
+        color: #fff;
+        text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 1px 1px #000, -1px -1px #000,
+          1px -1px #000, -1px 1px #000, 3px 3px #000, -3px -3px #000, 3px -3px #000, -3px 3px #000,
+          0 0 5px #fff, 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #f00, 0 0 40px #f00, 0 0 50px #f00,
+          0 0 100px #f00, 1px 1px 0 #f0f;
+      }
+    </style>
+    <title>Document</title>
   </head>
   <body>
-    <div id="app">
-      <div id="battle">
-        <div  class="container">
-          <img src="" class="attack" id="slice"></img>
-          <img src="" class="attack" id="damage"></img>
-          <img src="assets/Sans_idle.gif" alt="Sans idle" id="sans" />
-        </div>
-      </div>
-      <div id="terrain"></div>
-      <div id="info">
-        <p>CHARA</p>
-        <p>LV 19</p>
-        <div id="life">
-          <p>HP</p>
-          <div id="lifeBar">
-            <div id="current"></div>
-            <div id="max"></div>
-          </div>
-        </div>
-        <div id="karma">
-          <p>KR</p>
-          <p>92 / 92</p>
-        </div>
-      </div>
-      <div id="menu">
-        <img src="assets/FIGHTselected.png" alt="Fight" id="fight" class="selected" />
-        <img src="assets/ACT.png" alt="Act" id="act" />
-        <img src="assets/ITEM.png" alt="Item" id="item" />
-        <img src="assets/MERCY.png" alt="Mercy" id="mercy" />
+    <div
+      id="app"
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      "
+    >
+      <h1 id="gameName">UnderDice</h1>
+      <button id="start" href="Battle.html">Start the game</button>
+      <div
+        style="display: flex; justify-content: center; align-items: center; flex-direction: column"
+      >
+        <img src="./assets/flowey/Flowey_battle_talk.gif" alt="flowey" />
+        <div class="bubbleBelow" style="background-image: url(./assets/spr_blconbelow_0.png)"></div>
       </div>
     </div>
-    <script type="module" src="/src/main.ts" defer></script>
+    <script src="src/index.ts" type="module" defer></script>
   </body>
 </html>
