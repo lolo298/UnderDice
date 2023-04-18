@@ -2,17 +2,8 @@ import "./style.css";
 import "./fonts/stylesheet.css";
 import Game from "./Game";
 console.log("Hello World");
-import {
-  delay,
-  writeText,
-  newEvent,
-  randomNumber,
-  selectOption,
-  removeEvent,
-  createCustomEvent
-} from "./functions";
+import { delay, writeText, newEvent, randomNumber, selectOption, removeEvent } from "./functions";
 import { CSSselector } from "types";
-createCustomEvent("toBattle");
 globalThis.GameInstance = new Game();
 globalThis.phrases = [
   "* You felt your sins crawling on your back.",
@@ -28,7 +19,10 @@ let timeoutRewrite: number;
 await delay(1000);
 // @ts-ignore
 window["phrases"] = phrases;
-writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
+writeText(phrases[randomNumber(phrases.length - 1)], "#terrain", GameInstance.sounds.type, {
+  name: "type",
+  volume: 0.5
+});
 
 newEvent("keydown", handleKeyDown);
 newEvent("mousemove", handleMouseMove, "#menu");
@@ -50,6 +44,7 @@ function handleKeyDown(e: Event) {
       let selected = menu.children[id] as HTMLImageElement;
       let previous = menu.children[id - 1] as HTMLImageElement;
       if (id === 0) break;
+      GameInstance.sounds.menu.play();
       menuSelect[id] = 0;
       menuSelect[id - 1] = 1;
       selected.classList.toggle("selected");
@@ -69,6 +64,7 @@ function handleKeyDown(e: Event) {
       let selected = menu.children[id] as HTMLImageElement;
       let next = menu.children[id + 1] as HTMLImageElement;
       if (id === 3) break;
+      GameInstance.sounds.menu.play();
       menuSelect[id] = 0;
       menuSelect[id + 1] = 1;
       selected.classList.toggle("selected");
@@ -102,6 +98,7 @@ function handleMouseMove(e: Event) {
   }
   lastTarget = target;
   if (target.classList.contains("selected")) return;
+  GameInstance.sounds.menu.play();
   let oldSelected = document.querySelector(".selected") as HTMLImageElement;
   if (oldSelected) {
     oldSelected.src = oldSelected.src.replace(

@@ -29,5 +29,27 @@ declare module "types" {
     getSansLife(): number;
     getSansLifeMax(): number;
     spawnBlaster(soul: HTMLImageElement, damage: number): Promise<void>;
+    sounds: Sounds;
+  }
+
+  export interface Sounds {
+    musique: HTMLAudioElement;
+    blasterSpawn: HTMLAudioElement;
+    blasterHit: HTMLAudioElement;
+    damage: HTMLAudioElement;
+    type: HTMLAudioElement;
+    slice: HTMLAudioElement;
+    menu: HTMLAudioElement;
+  }
+
+  export interface AudioWriter {
+    url: string;
+    settings: AudioWriterSettings;
+  }
+  interface AudioWriterSettings {
+    name: string;
+    volume?: number;
+    loop?: boolean;
+    playbackRate?: number;
   }
 }

@@ -1,13 +1,45 @@
-import { CSSselector, EventCreator } from "types";
+import { AudioWriter, AudioWriterSettings, CSSselector, EventCreator } from "types";
 import throwDice from "./Dices";
+import Game from "./Game";
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 export let lastTimeout: number;
-
-export async function writeText(phrase: string, target: CSSselector) {
-  console.log(phrase);
+function isAudioWriter(audio: AudioWriter | HTMLAudioElement | null): audio is AudioWriter {
+  return (audio as AudioWriter).url != null;
+}
+export async function writeText(
+  phrase: string,
+  target: CSSselector,
+  audio: AudioWriter | HTMLAudioElement | null = null,
+  settings: AudioWriterSettings | null = null
+) {
+  let audioToPlay: HTMLAudioElement | null = null;
+  let audioSettings: AudioWriterSettings | null = null;
+  if (audio != null) {
+    if (isAudioWriter(audio)) {
+      audioToPlay = new Audio(audio.url);
+      if (audio.settings) audioSettings = audio.settings;
+    } else {
+      audioToPlay = audio;
+      if (settings) audioSettings = settings;
+    }
+    if (audioSettings) {
+      // @ts-ignore
+      for (let setting in audioSettings) audioToPlay[setting] = audioSettings[setting];
+    }
+    document.addEventListener(
+      "leaveHome",
+      () => {
+        if (audioToPlay == null) return;
+        audioToPlay.pause();
+        audioToPlay.currentTime = 0;
+      },
+      { once: true }
+    );
+    if (audioSettings?.name != "type") audioToPlay.play();
+  }
   const container = document.querySelector(target);
   if (!container) throw new Error("container is not an HTMLElement");
   container.innerHTML = "";
@@ -15,8 +47,20 @@ export async function writeText(phrase: string, target: CSSselector) {
   container.appendChild(p);
   if (lastTimeout) clearTimeout(lastTimeout);
   for (let letter of phrase) {
+    if (audioSettings?.name == "type") {
+      console.log("type");
+      let loopAudio = audioToPlay?.cloneNode() as HTMLAudioElement;
+      loopAudio.volume = audioSettings?.volume || 1;
+      loopAudio.playbackRate = audioSettings?.playbackRate || 1;
+      loopAudio.loop = false;
+      loopAudio.play();
+    }
     p.innerHTML += letter;
     await new Promise((r) => (lastTimeout = setTimeout(r, 50)));
+  }
+  if (audioToPlay != null) {
+    audioToPlay.pause();
+    audioToPlay.currentTime = 0;
   }
 }
 

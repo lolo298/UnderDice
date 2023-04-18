@@ -1,4 +1,4 @@
-import { gameState } from "types";
+import { Sounds, gameState } from "types";
 import Dice from "./Dices";
 import { delay, randomNumber, toMenu, writeText } from "./functions";
 
@@ -14,6 +14,15 @@ export default class Game {
   private damageSprite: HTMLImageElement;
   private terrain: HTMLDivElement;
   private floweySprite: HTMLImageElement;
+  public sounds: Sounds = {
+    musique: new Audio("./assets/sounds/snd_txtsans.wav"),
+    blasterSpawn: new Audio("./assets/sounds/mus_sfx_blasterLoad.wav"),
+    blasterHit: new Audio("./assets/sounds/mus_sfx_blasterShot.ogg"),
+    slice: new Audio("./assets/sounds/snd_laz.wav"),
+    type: new Audio("./assets/sounds/snd_txt.wav"),
+    damage: new Audio("./assets/sounds/snd_hurt1.wav"),
+    menu: new Audio("./assets/sounds/mus_sfx_a_target.wav")
+  };
   public state: gameState = "idle";
 
   public constructor() {
@@ -45,6 +54,19 @@ export default class Game {
     this.damageSprite = damageSprite;
     this.terrain = terrain;
     this.floweySprite = floweySprite;
+
+    this.sounds.blasterHit.volume = 0.5;
+    this.sounds.blasterSpawn.volume = 0.5;
+    this.sounds.damage.volume = 0.5;
+    this.sounds.slice.volume = 0.5;
+    this.sounds.type.volume = 0.5;
+    this.sounds.musique.volume = 0.5;
+    this.sounds.menu.volume = 0.5;
+
+    this.sounds.slice.playbackRate = 0.7;
+    this.sounds.type.playbackRate = 1.5;
+
+    this.sounds.type.loop = true;
   }
 
   public getCharaLife(): number {
@@ -62,12 +84,15 @@ export default class Game {
   public attack(damage: number): void {
     this.sansLife -= damage;
     this.damageSprite.src = `./assets/damages/spr_dmgnum_${damage}.png`;
+    this.sounds.slice.play();
     //30FPS
     const fps = 30;
     let frames = 0;
     let attack = 0;
     const interval = setInterval(() => {
       if (frames >= 30) {
+        this.sounds.slice.pause();
+        this.sounds.slice.currentTime = 0;
         this.attackSprite.src = "";
         this.sansSprite.src = "./assets/Sans_idle.gif";
         this.damageSprite.src = "";
@@ -141,7 +166,7 @@ export default class Game {
     const laser = document.createElement("div");
     laser.classList.add("laser");
     document.querySelector("#app")?.appendChild(laser);
-
+    this.sounds.blasterSpawn.play();
     let keyframes = [
       { transform: `scale(0) rotate(0) ` },
       { transform: `scale(6) rotate(450deg)` } //rotate(${360 + angleDeg}deg)
@@ -198,6 +223,7 @@ export default class Game {
     let interval = setInterval(async () => {
       if (frames >= 30) {
         clearInterval(interval);
+        this.sounds.blasterHit.play();
         soul.animate(soulKeyframes, soulOptions);
         let laserAnimation = laser.animate(keyframes, options);
         setTimeout(() => {
@@ -287,7 +313,15 @@ export default class Game {
     await delay(1000);
     bubble.style.backgroundImage = 'url("./assets/spr_blconabove_0.png")';
     console.log("done");
-    writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble");
+    writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble", {
+      url: "./assets/sounds/snd_floweytalk1.wav",
+      settings: {
+        name: "flowey",
+        volume: 0.5,
+        loop: true,
+        playbackRate: 0.8
+      }
+    });
   }
 
   public spawnFlowey(): void {

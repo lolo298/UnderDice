@@ -1,6 +1,7 @@
 import "./style.css";
 import "./fonts/stylesheet.css";
 import { writeText, delay } from "./functions";
+import { AudioWriter } from "types";
 
 const btn = document.querySelector("#start") as HTMLButtonElement;
 const title = document.querySelector("hI") as HTMLDivElement;
@@ -9,6 +10,9 @@ talk();
 btn.onclick = goToBattle;
 
 function goToBattle() {
+  let leaveHome = new CustomEvent("leaveHome");
+  document.dispatchEvent(leaveHome);
+
   const battleHTML = `
   <div id="battle">
     <div class="flowey">
@@ -73,20 +77,44 @@ function goToHome() {
 }
 
 async function talk() {
-  await writeText("Howdy! I'm Flowey!", ".bubbleBelow");
+  let audioToPlay: AudioWriter = {
+    url: "./assets/sounds/snd_floweytalk1.wav",
+    settings: {
+      name: "flowey",
+      volume: 0.5,
+      loop: true,
+      playbackRate: 0.8
+    }
+  };
+
+  let skip = false;
+  //exit the function talk when recieve the event leaveHome
+  document.addEventListener("leaveHome", () => {
+    skip = true;
+  });
+
+  if (skip) return;
+  await writeText("Howdy! I'm Flowey!", ".bubbleBelow", audioToPlay);
   await delay(500);
-  await writeText("Flowey the Flower!", ".bubbleBelow");
+  if (skip) return;
+  await writeText("Flowey the Flower!", ".bubbleBelow", audioToPlay);
   await delay(500);
-  await writeText("Welcome to UnderDice!", ".bubbleBelow");
+  if (skip) return;
+  await writeText("Welcome to UnderDice!", ".bubbleBelow", audioToPlay);
   await delay(500);
-  await writeText("In this game You'll have to fight Sans ", ".bubbleBelow");
+  if (skip) return;
+  await writeText("In this game You'll have to fight Sans ", ".bubbleBelow", audioToPlay);
   await delay(1000);
+  if (skip) return;
   await writeText(
     "For this you will throw a dice that will determine the damage you will deal",
-    ".bubbleBelow"
+    ".bubbleBelow",
+    audioToPlay
   );
   await delay(1000);
-  await writeText("And another one to take less damage", ".bubbleBelow");
+  if (skip) return;
+  await writeText("And another one to take less damage", ".bubbleBelow", audioToPlay);
   await delay(1000);
-  await writeText("Good luck", ".bubbleBelow");
+  if (skip) return;
+  await writeText("Good luck", ".bubbleBelow", audioToPlay);
 }
