@@ -258,7 +258,7 @@ canvas {
 
 .bubble p {
   color: #000;
-  max-width: 80%;
+  max-width: 50%;
   text-align: center;
   display: flex;
   align-items: center;

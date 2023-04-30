@@ -15,13 +15,13 @@ export default class Game {
   private terrain: HTMLDivElement;
   private floweySprite: HTMLImageElement;
   public sounds: Sounds = {
-    musique: new Audio("./assets/sounds/snd_txtsans.wav"),
+    musique: new Audio("./assets/sounds/mus_zz_megalovania.ogg"),
     blasterSpawn: new Audio("./assets/sounds/mus_sfx_blasterLoad.wav"),
     blasterHit: new Audio("./assets/sounds/mus_sfx_blasterShot.ogg"),
     slice: new Audio("./assets/sounds/snd_laz.wav"),
     type: new Audio("./assets/sounds/snd_txt.wav"),
     damage: new Audio("./assets/sounds/snd_hurt1.wav"),
-    menu: new Audio("./assets/sounds/mus_sfx_a_target.wav")
+    menu: new Audio("./assets/sounds/mus_sfx_a_target.wav"),
   };
   public state: gameState = "idle";
 
@@ -60,13 +60,14 @@ export default class Game {
     this.sounds.damage.volume = 0.5;
     this.sounds.slice.volume = 0.5;
     this.sounds.type.volume = 0.5;
-    this.sounds.musique.volume = 0.5;
+    this.sounds.musique.volume = 0.2;
     this.sounds.menu.volume = 0.5;
 
     this.sounds.slice.playbackRate = 0.7;
     this.sounds.type.playbackRate = 1.5;
 
-    this.sounds.type.loop = true;
+    // this.sounds.type.loop = true;
+    this.sounds.musique.loop = true;
   }
 
   public getCharaLife(): number {
@@ -113,12 +114,12 @@ export default class Game {
         let keyframes = [
           { transform: "translateX(0px)" },
           { transform: "translateX(-10px)" },
-          { transform: "translateX(0px)" }
+          { transform: "translateX(0px)" },
         ];
         let options = {
           duration: (1000 / fps) * 10,
           iterations: 1,
-          easing: "steps(3, end)"
+          easing: "steps(3, end)",
         };
         var sansHitAnimation = this.sansSprite.animate(keyframes, options);
       }
@@ -169,13 +170,13 @@ export default class Game {
     this.sounds.blasterSpawn.play();
     let keyframes = [
       { transform: `scale(0) rotate(0) ` },
-      { transform: `scale(6) rotate(450deg)` } //rotate(${360 + angleDeg}deg)
+      { transform: `scale(6) rotate(450deg)` }, //rotate(${360 + angleDeg}deg)
     ];
     let options = {
       duration: 1000,
       iterations: 1,
       easing: "ease-in-out",
-      fill: "forwards" as "forwards"
+      fill: "forwards" as "forwards",
     };
     let blasterAnimation = blaster.animate(keyframes, options);
     const fps = 60;
@@ -204,18 +205,18 @@ export default class Game {
       duration: 400,
       iterations: 1,
       easing: "ease-in-out",
-      fill: "forwards" as "forwards"
+      fill: "forwards" as "forwards",
     };
     if (damage === 0) {
       var soulKeyframes = [
         { transform: `translate(0,0) ` },
-        { transform: `translate(0, 800%)` } //rotate(${360 + angleDeg}deg)
+        { transform: `translate(0, 800%)` }, //rotate(${360 + angleDeg}deg)
       ];
       var soulOptions = {
         duration: 300,
         iterations: 1,
         easing: "ease-in-out",
-        fill: "forwards" as "forwards"
+        fill: "forwards" as "forwards",
       };
     }
     frames = 0;
@@ -233,6 +234,7 @@ export default class Game {
           this.checkEnd();
           if (this.state === "lose") {
             laserAnimation.pause();
+            GameInstance.sounds.musique.pause();
             clearInterval(interval);
             this.toGameOver();
             return;
@@ -243,13 +245,13 @@ export default class Game {
           //@ts-ignore
           { transform: `scale(1, 1)`, opacity: 1 },
           //@ts-ignore
-          { transform: `scale(1, 0.5)`, opacity: 0 }
+          { transform: `scale(1, 0.5)`, opacity: 0 },
         ];
         options = {
           duration: 1000,
           iterations: 1,
           easing: "ease-in-out",
-          fill: "forwards" as "forwards"
+          fill: "forwards" as "forwards",
         };
         laser.animate(keyframes, options);
         await blaster.animate({ opacity: 0 }, { duration: 1000, iterations: 1 }).finished;
@@ -288,7 +290,7 @@ export default class Game {
       "CHARA, please... wake up! The fate of humans and monsters depends on you!",
       "CHARA! You have to stay determined! You can't give up... You are the future of humans and monsters...",
       "wake up! It's not over!",
-      "Please don't give up..."
+      "Please don't give up...",
     ];
     const endBackground = document.createElement("div");
     endBackground.classList.add("endBackground");
@@ -304,6 +306,7 @@ export default class Game {
     writeText(gameOverPhrases[rng], ".endText");
   }
   public async toWin(): Promise<void> {
+    GameInstance.sounds.musique.pause();
     document.querySelector(".blaster")?.remove();
     document.querySelector(".laser")?.remove();
     this.spawnFlowey();
@@ -313,15 +316,29 @@ export default class Game {
     await delay(1000);
     bubble.style.backgroundImage = 'url("./assets/spr_blconabove_0.png")';
     console.log("done");
-    writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble", {
+    await writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble", {
       url: "./assets/sounds/snd_floweytalk1.wav",
       settings: {
         name: "flowey",
         volume: 0.5,
         loop: true,
-        playbackRate: 0.8
-      }
+        playbackRate: 0.8,
+      },
     });
+    await delay(1000);
+    await writeText(
+      "Now you've completed the game. But it's not like you can go back and change anything",
+      ".bubble",
+      {
+        url: "./assets/sounds/snd_floweytalk1.wav",
+        settings: {
+          name: "flowey",
+          volume: 0.5,
+          loop: true,
+          playbackRate: 0.8,
+        },
+      }
+    );
   }
 
   public spawnFlowey(): void {

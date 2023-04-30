@@ -11,18 +11,17 @@ globalThis.phrases = [
   "* Your filled with determination",
   "* You feel like  your gonna have a bad time.",
   "* Reading this doesn't seem like the best use of your time.",
-  "* Sans is preparing something."
+  "* Sans is preparing something.",
 ];
+
+GameInstance.sounds.musique.play();
 let phrases = globalThis.phrases;
 let menuSelect = [1, 0, 0, 0];
 let timeoutRewrite: number;
 await delay(1000);
 // @ts-ignore
 window["phrases"] = phrases;
-writeText(phrases[randomNumber(phrases.length - 1)], "#terrain", GameInstance.sounds.type, {
-  name: "type",
-  volume: 0.5
-});
+writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
 
 newEvent("keydown", handleKeyDown);
 newEvent("mousemove", handleMouseMove, "#menu");

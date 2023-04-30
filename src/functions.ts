@@ -12,19 +12,16 @@ function isAudioWriter(audio: AudioWriter | HTMLAudioElement | null): audio is A
 export async function writeText(
   phrase: string,
   target: CSSselector,
-  audio: AudioWriter | HTMLAudioElement | null = null,
+  audio: AudioWriter | null = null,
   settings: AudioWriterSettings | null = null
 ) {
   let audioToPlay: HTMLAudioElement | null = null;
   let audioSettings: AudioWriterSettings | null = null;
+  let audioType: string | undefined;
   if (audio != null) {
-    if (isAudioWriter(audio)) {
-      audioToPlay = new Audio(audio.url);
-      if (audio.settings) audioSettings = audio.settings;
-    } else {
-      audioToPlay = audio;
-      if (settings) audioSettings = settings;
-    }
+    audioToPlay = new Audio(audio.url);
+    if (audio.settings) audioSettings = audio.settings;
+    audioType = audioSettings?.name;
     if (audioSettings) {
       // @ts-ignore
       for (let setting in audioSettings) audioToPlay[setting] = audioSettings[setting];
@@ -38,7 +35,11 @@ export async function writeText(
       },
       { once: true }
     );
-    if (audioSettings?.name != "type") audioToPlay.play();
+    audioToPlay.play();
+  } else {
+    audioToPlay = GameInstance.sounds.type;
+    audioType = "type";
+    audioToPlay.play();
   }
   const container = document.querySelector(target);
   if (!container) throw new Error("container is not an HTMLElement");
@@ -47,11 +48,11 @@ export async function writeText(
   container.appendChild(p);
   if (lastTimeout) clearTimeout(lastTimeout);
   for (let letter of phrase) {
-    if (audioSettings?.name == "type") {
+    if (audioType == "type") {
       console.log("type");
       let loopAudio = audioToPlay?.cloneNode() as HTMLAudioElement;
-      loopAudio.volume = audioSettings?.volume || 1;
-      loopAudio.playbackRate = audioSettings?.playbackRate || 1;
+      loopAudio.volume = GameInstance.sounds.type.volume;
+      loopAudio.playbackRate = GameInstance.sounds.type.playbackRate;
       loopAudio.loop = false;
       loopAudio.play();
     }
@@ -126,7 +127,7 @@ export async function toBattle() {
   const animation = terrain.animate([{ width: "40%" }], {
     duration: 500,
     fill: "forwards",
-    easing: "ease-in-out"
+    easing: "ease-in-out",
   });
   await animation.finished;
   throwDice();
@@ -141,7 +142,7 @@ export function toMenu() {
   terrain.animate([{ width: gameWidth }], {
     duration: 500,
     fill: "forwards",
-    easing: "ease-in-out"
+    easing: "ease-in-out",
   });
   terrain.classList.toggle("fight");
   terrain.innerHTML = "";

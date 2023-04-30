@@ -83,8 +83,8 @@ async function talk() {
       name: "flowey",
       volume: 0.5,
       loop: true,
-      playbackRate: 0.8
-    }
+      playbackRate: 0.8,
+    },
   };
 
   let skip = false;
