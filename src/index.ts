@@ -50,11 +50,12 @@ function goToBattle() {
   app.style.justifyContent = "";
   app.style.alignItems = "";
   app.innerHTML = battleHTML;
-  const battleScript = document.createElement("script");
-  battleScript.src = "src/main.ts";
-  battleScript.type = "module";
-  battleScript.async = true;
-  document.body.appendChild(battleScript);
+  // const battleScript = document.createElement("script");
+  // battleScript.src = "src/main.ts";
+  // battleScript.type = "module";
+  // battleScript.async = true;
+  // document.body.appendChild(battleScript);
+  import("./main");
 }
 
 // function goToHome() {

@@ -2,7 +2,7 @@ import "./style.css";
 import "./fonts/stylesheet.css";
 import Game from "./Game";
 console.log("Hello World");
-import { delay, writeText, newEvent, randomNumber, selectOption, removeEvent } from "./functions";
+import { writeText, newEvent, randomNumber, selectOption, removeEvent } from "./functions";
 import { CSSselector } from "types";
 globalThis.GameInstance = new Game();
 globalThis.phrases = [
@@ -18,7 +18,7 @@ GameInstance.sounds.musique.play();
 let phrases = globalThis.phrases;
 let menuSelect = [1, 0, 0, 0];
 // let timeoutRewrite: number;
-await delay(1000);
+// await delay(1000);
 // @ts-ignore
 window["phrases"] = phrases;
 writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
