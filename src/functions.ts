@@ -1,19 +1,14 @@
 import { AudioWriter, AudioWriterSettings, CSSselector, EventCreator } from "types";
 import throwDice from "./Dices";
-import Game from "./Game";
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 export let lastTimeout: number;
-function isAudioWriter(audio: AudioWriter | HTMLAudioElement | null): audio is AudioWriter {
-  return (audio as AudioWriter).url != null;
-}
 export async function writeText(
   phrase: string,
   target: CSSselector,
-  audio: AudioWriter | null = null,
-  settings: AudioWriterSettings | null = null
+  audio: AudioWriter | null = null
 ) {
   let audioToPlay: HTMLAudioElement | null = null;
   let audioSettings: AudioWriterSettings | null = null;

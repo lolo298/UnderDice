@@ -38,7 +38,7 @@ async function setup(terrain: HTMLDivElement) {
     new CANNON.Material("ground"),
     new CANNON.Material("dice"),
     {
-      restitution: 0.3
+      restitution: 0.3,
     }
   );
   world.addContactMaterial(contactMaterial);
@@ -84,7 +84,7 @@ async function addDice(
     material: contactMaterial.materials[1],
     allowSleep: true,
     sleepSpeedLimit: 0.1,
-    sleepTimeLimit: 1
+    sleepTimeLimit: 1,
   });
   world.addBody(diceBody);
   diceBody.position.set(0, 0, 0);
@@ -111,7 +111,7 @@ async function addGround(
     mass: 0,
     shape: new CANNON.Plane(),
     material: contactMaterial.materials[0],
-    type: CANNON.Body.STATIC
+    type: CANNON.Body.STATIC,
   });
   world.addBody(groundBody);
   groundBody.position.set(0, 0, 0);
@@ -126,36 +126,36 @@ async function loadGLTF(path: string) {
   return gltf.scene;
 }
 
-function addDebugCube(scene: THREE.Scene) {
-  const cube = new THREE.BoxGeometry(100, 100, 100);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  const cubeMesh = new THREE.Mesh(cube, material);
-  scene.add(cubeMesh);
-}
+// function addDebugCube(scene: THREE.Scene) {
+//   const cube = new THREE.BoxGeometry(100, 100, 100);
+//   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+//   const cubeMesh = new THREE.Mesh(cube, material);
+//   scene.add(cubeMesh);
+// }
 
-function HELPERS({
-  scene,
-  camera,
-  renderer,
-  dice
-}: {
-  scene: THREE.Scene;
-  camera: THREE.Camera;
-  renderer: THREE.Renderer;
-  dice: {
-    dice: THREE.Group;
-    diceBody: CANNON.Body;
-    id: number;
-  };
-}) {
-  // const controls = new OrbitControls(camera, renderer.domElement);
-  const axesHelper = new THREE.AxesHelper(200);
-  scene.add(axesHelper);
-  const diceAxesHelper = new THREE.AxesHelper(5);
-  if (dice) {
-    dice.dice.add(diceAxesHelper);
-  }
-}
+// function HELPERS({
+//   scene,
+//   camera,
+//   renderer,
+//   dice
+// }: {
+//   scene: THREE.Scene;
+//   camera: THREE.Camera;
+//   renderer: THREE.Renderer;
+//   dice: {
+//     dice: THREE.Group;
+//     diceBody: CANNON.Body;
+//     id: number;
+//   };
+// }) {
+//   // const controls = new OrbitControls(camera, renderer.domElement);
+//   const axesHelper = new THREE.AxesHelper(200);
+//   scene.add(axesHelper);
+//   const diceAxesHelper = new THREE.AxesHelper(5);
+//   if (dice) {
+//     dice.dice.add(diceAxesHelper);
+//   }
+// }
 
 function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number) {
   const mesh = scene.getObjectById(objectId) as THREE.Mesh;
@@ -212,28 +212,28 @@ function getDiceValue(e: CANNONEvent) {
   }
 }
 
-function addDebugDot(
-  elem: {
-    dice: THREE.Group;
-    diceBody: CANNON.Body;
-    id: number;
-  },
-  pos: { x: number; y: number; z: number }
-) {
-  const dot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.1),
-    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-  );
-  dot.position.set(pos.x, pos.y, pos.z);
-  elem.dice.add(dot);
-}
+// function addDebugDot(
+//   elem: {
+//     dice: THREE.Group;
+//     diceBody: CANNON.Body;
+//     id: number;
+//   },
+//   pos: { x: number; y: number; z: number }
+// ) {
+//   const dot = new THREE.Mesh(
+//     new THREE.SphereGeometry(0.1),
+//     new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+//   );
+//   dot.position.set(pos.x, pos.y, pos.z);
+//   elem.dice.add(dot);
+// }
 
 function addWalls(scene: THREE.Scene, world: CANNON.World) {
   const color = 0x999999;
   const wallLeft = new CANNON.Body({
     mass: 0,
     shape: new CANNON.Plane(),
-    type: CANNON.Body.STATIC
+    type: CANNON.Body.STATIC,
   });
   world.addBody(wallLeft);
   wallLeft.position.set(-10, 0, 0);
@@ -252,7 +252,7 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   const wallRight = new CANNON.Body({
     mass: 0,
     shape: new CANNON.Plane(),
-    type: CANNON.Body.STATIC
+    type: CANNON.Body.STATIC,
   });
   world.addBody(wallRight);
   wallRight.position.set(10, 0, 0);
@@ -271,7 +271,7 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   const wallTop = new CANNON.Body({
     mass: 0,
     shape: new CANNON.Plane(),
-    type: CANNON.Body.STATIC
+    type: CANNON.Body.STATIC,
   });
   world.addBody(wallTop);
   wallTop.position.set(0, 0, -5);
@@ -290,7 +290,7 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
   const wallBottom = new CANNON.Body({
     mass: 0,
     shape: new CANNON.Plane(),
-    type: CANNON.Body.STATIC
+    type: CANNON.Body.STATIC,
   });
   world.addBody(wallBottom);
   wallBottom.position.set(0, 0, 5);

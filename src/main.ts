@@ -17,7 +17,7 @@ globalThis.phrases = [
 GameInstance.sounds.musique.play();
 let phrases = globalThis.phrases;
 let menuSelect = [1, 0, 0, 0];
-let timeoutRewrite: number;
+// let timeoutRewrite: number;
 await delay(1000);
 // @ts-ignore
 window["phrases"] = phrases;
@@ -35,8 +35,8 @@ function handleKeyDown(e: Event) {
   if (!(e instanceof KeyboardEvent)) return;
   if (GameInstance.state === "attack" || GameInstance.state === "defend") return;
   const menu = document.querySelector("#menu") as HTMLDivElement;
-  const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  let p = document.createElement("p");
+  // const terrain = document.querySelector("#terrain") as HTMLDivElement;
+  // let p = document.createElement("p");
   switch (e.code) {
     case "ArrowLeft": {
       let id = menuSelect.indexOf(1);

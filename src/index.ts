@@ -4,7 +4,7 @@ import { writeText, delay } from "./functions";
 import { AudioWriter } from "types";
 
 const btn = document.querySelector("#start") as HTMLButtonElement;
-const title = document.querySelector("hI") as HTMLDivElement;
+// const title = document.querySelector("hI") as HTMLDivElement;
 const app = document.querySelector("#app") as HTMLDivElement;
 talk();
 btn.onclick = goToBattle;
@@ -57,24 +57,24 @@ function goToBattle() {
   document.body.appendChild(battleScript);
 }
 
-function goToHome() {
-  const homeHTML = `
-  <div id="home">
-    <h1>UNDERTALE</h1>
-    <button id="start">START</button>
-  </div>
-  `;
-  app.style.display = "flex";
-  app.style.flexDirection = "column";
-  app.style.justifyContent = "flex-start";
-  app.style.alignItems = "center";
-  app.innerHTML = homeHTML;
-  const homeScript = document.createElement("script");
-  homeScript.src = "src/index.ts";
-  homeScript.type = "module";
-  homeScript.async = true;
-  document.body.appendChild(homeScript);
-}
+// function goToHome() {
+//   const homeHTML = `
+//   <div id="home">
+//     <h1>UNDERTALE</h1>
+//     <button id="start">START</button>
+//   </div>
+//   `;
+//   app.style.display = "flex";
+//   app.style.flexDirection = "column";
+//   app.style.justifyContent = "flex-start";
+//   app.style.alignItems = "center";
+//   app.innerHTML = homeHTML;
+//   const homeScript = document.createElement("script");
+//   homeScript.src = "src/index.ts";
+//   homeScript.type = "module";
+//   homeScript.async = true;
+//   document.body.appendChild(homeScript);
+// }
 
 async function talk() {
   let audioToPlay: AudioWriter = {
