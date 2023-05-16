@@ -2,9 +2,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as CANNON from "cannon-es";
 import { CANNONEvent, Game } from "types";
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
-
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 
 export default async function Dice() {
   const GameInstance = window.GameInstance as Game;
@@ -13,7 +12,8 @@ export default async function Dice() {
   terrain.appendChild(threeData.renderer.domElement);
   // HELPERS(threeData);
   const attackText = document.createElement("p");
-  attackText.innerHTML = GameInstance.state === "attack" ? "You attack!" : "You defend!";
+  attackText.innerHTML =
+    GameInstance.state === "attack" ? "You attack!" : "You defend!";
   attackText.classList.add("actionText");
   terrain.appendChild(attackText);
   throwDice(threeData.dice);
@@ -39,7 +39,7 @@ async function setup(terrain: HTMLDivElement) {
 
   //add the postprocessing effect to make the dice pixelated
   const composer = new EffectComposer(renderer);
-  const renderPixelatedPass = new RenderPixelatedPass(3, scene, camera);  
+  const renderPixelatedPass = new RenderPixelatedPass(3, scene, camera);
   composer.addPass(renderPixelatedPass);
 
   const world = setupPhysics();
@@ -55,7 +55,6 @@ async function setup(terrain: HTMLDivElement) {
   const ground = await addGround(scene, world, contactMaterial);
   const dice = await addDice(scene, world, contactMaterial);
   addWalls(scene, world);
-
 
   function animate() {
     requestAnimationFrame(animate);
@@ -129,7 +128,10 @@ async function addGround(
   });
   world.addBody(groundBody);
   groundBody.position.set(0, 0, 0);
-  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+  groundBody.quaternion.setFromAxisAngle(
+    new CANNON.Vec3(1, 0, 0),
+    -Math.PI / 2
+  );
 
   return { ground, groundBody, id };
 }
@@ -140,20 +142,38 @@ async function loadGLTF(path: string) {
   return gltf.scene;
 }
 
-function updatePosition(scene: THREE.Scene, body: CANNON.Body, objectId: number) {
+function updatePosition(
+  scene: THREE.Scene,
+  body: CANNON.Body,
+  objectId: number
+) {
   const mesh = scene.getObjectById(objectId) as THREE.Mesh;
-  mesh.position.copy(new THREE.Vector3().set(body.position.x, body.position.y, body.position.z));
-  mesh.quaternion.copy(new THREE.Quaternion().set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w));
+  mesh.position.copy(
+    new THREE.Vector3().set(body.position.x, body.position.y, body.position.z)
+  );
+  mesh.quaternion.copy(
+    new THREE.Quaternion().set(
+      body.quaternion.x,
+      body.quaternion.y,
+      body.quaternion.z,
+      body.quaternion.w
+    )
+  );
 }
 
-function throwDice(dice: { diceBody: CANNON.Body; id: number; dice: THREE.Group } | CANNON.Body) {
+function throwDice(
+  dice: { diceBody: CANNON.Body; id: number; dice: THREE.Group } | CANNON.Body
+) {
   const x = Math.random() * 2 - 1;
   const z = Math.random() * 2 - 1;
   if (dice instanceof CANNON.Body) {
     dice.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(x, -1, z));
     return;
   }
-  dice.diceBody.applyImpulse(new CANNON.Vec3(10, 10, 10), new CANNON.Vec3(x, -1, z));
+  dice.diceBody.applyImpulse(
+    new CANNON.Vec3(10, 10, 10),
+    new CANNON.Vec3(x, -1, z)
+  );
 }
 function getDiceValue(e: CANNONEvent) {
   const dice = e.target;
@@ -164,26 +184,39 @@ function getDiceValue(e: CANNONEvent) {
   const eps = 0.1;
   const isZero = (angle: number) => Math.abs(angle) < eps;
   const isHalfPi = (angle: number) => Math.abs(angle - 0.5 * Math.PI) < eps;
-  const isMinusHalfPi = (angle: number) => Math.abs(0.5 * Math.PI + angle) < eps;
+  const isMinusHalfPi = (angle: number) =>
+    Math.abs(0.5 * Math.PI + angle) < eps;
   const isPiOrMinusPi = (angle: number) =>
     Math.abs(Math.PI - angle) < eps || Math.abs(Math.PI + angle) < eps;
   if (isZero(euler.z)) {
     if (isZero(euler.x)) {
-      GameInstance.state === "attack" ? GameInstance.attack(2) : GameInstance.defend(2);
+      GameInstance.state === "attack"
+        ? GameInstance.attack(2)
+        : GameInstance.defend(2);
     } else if (isHalfPi(euler.x)) {
-      GameInstance.state === "attack" ? GameInstance.attack(4) : GameInstance.defend(4);
+      GameInstance.state === "attack"
+        ? GameInstance.attack(4)
+        : GameInstance.defend(4);
     } else if (isMinusHalfPi(euler.x)) {
-      GameInstance.state === "attack" ? GameInstance.attack(3) : GameInstance.defend(3);
+      GameInstance.state === "attack"
+        ? GameInstance.attack(3)
+        : GameInstance.defend(3);
     } else if (isPiOrMinusPi(euler.x)) {
-      GameInstance.state === "attack" ? GameInstance.attack(5) : GameInstance.defend(5);
+      GameInstance.state === "attack"
+        ? GameInstance.attack(5)
+        : GameInstance.defend(5);
     } else {
       dice.allowSleep = true;
       throwDice(dice);
     }
   } else if (isHalfPi(euler.z)) {
-    GameInstance.state === "attack" ? GameInstance.attack(1) : GameInstance.defend(1);
+    GameInstance.state === "attack"
+      ? GameInstance.attack(1)
+      : GameInstance.defend(1);
   } else if (isMinusHalfPi(euler.z)) {
-    GameInstance.state === "attack" ? GameInstance.attack(6) : GameInstance.defend(6);
+    GameInstance.state === "attack"
+      ? GameInstance.attack(6)
+      : GameInstance.defend(6);
   } else {
     // landed on edge => wait to fall on side and fire the event again
     dice.allowSleep = true;
@@ -207,8 +240,21 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     new THREE.PlaneGeometry(100, 100, 100),
     new THREE.MeshBasicMaterial({ color })
   );
-  wallLeftMesh.position.copy(new THREE.Vector3().set(wallLeft.position.x, wallLeft.position.y, wallLeft.position.z));
-  wallLeftMesh.quaternion.copy(new THREE.Quaternion().set(wallLeft.quaternion.x, wallLeft.quaternion.y, wallLeft.quaternion.z, wallLeft.quaternion.w));
+  wallLeftMesh.position.copy(
+    new THREE.Vector3().set(
+      wallLeft.position.x,
+      wallLeft.position.y,
+      wallLeft.position.z
+    )
+  );
+  wallLeftMesh.quaternion.copy(
+    new THREE.Quaternion().set(
+      wallLeft.quaternion.x,
+      wallLeft.quaternion.y,
+      wallLeft.quaternion.z,
+      wallLeft.quaternion.w
+    )
+  );
   scene.add(wallLeftMesh);
 
   const wallRight = new CANNON.Body({
@@ -224,8 +270,21 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     new THREE.PlaneGeometry(50, 50),
     new THREE.MeshBasicMaterial({ color })
   );
-  wallRightMesh.position.copy(new THREE.Vector3().set(wallRight.position.x, wallRight.position.y, wallRight.position.z));
-  wallRightMesh.quaternion.copy(new THREE.Quaternion().set(wallRight.quaternion.x, wallRight.quaternion.y, wallRight.quaternion.z, wallRight.quaternion.w));
+  wallRightMesh.position.copy(
+    new THREE.Vector3().set(
+      wallRight.position.x,
+      wallRight.position.y,
+      wallRight.position.z
+    )
+  );
+  wallRightMesh.quaternion.copy(
+    new THREE.Quaternion().set(
+      wallRight.quaternion.x,
+      wallRight.quaternion.y,
+      wallRight.quaternion.z,
+      wallRight.quaternion.w
+    )
+  );
   scene.add(wallRightMesh);
 
   const wallTop = new CANNON.Body({
@@ -241,8 +300,21 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     new THREE.PlaneGeometry(50, 50),
     new THREE.MeshBasicMaterial({ color })
   );
-  wallTopMesh.position.copy(new THREE.Vector3().set(wallTop.position.x, wallTop.position.y, wallTop.position.z));
-  wallTopMesh.quaternion.copy(new THREE.Quaternion().set(wallTop.quaternion.x, wallTop.quaternion.y, wallTop.quaternion.z, wallTop.quaternion.w));
+  wallTopMesh.position.copy(
+    new THREE.Vector3().set(
+      wallTop.position.x,
+      wallTop.position.y,
+      wallTop.position.z
+    )
+  );
+  wallTopMesh.quaternion.copy(
+    new THREE.Quaternion().set(
+      wallTop.quaternion.x,
+      wallTop.quaternion.y,
+      wallTop.quaternion.z,
+      wallTop.quaternion.w
+    )
+  );
   scene.add(wallTopMesh);
 
   const wallBottom = new CANNON.Body({
@@ -258,7 +330,13 @@ function addWalls(scene: THREE.Scene, world: CANNON.World) {
     new THREE.PlaneGeometry(50, 50),
     new THREE.MeshBasicMaterial({ color })
   );
-  wallBottomMesh.position.copy(new THREE.Vector3().set(wallBottom.position.x, wallBottom.position.y, wallBottom.position.z));
+  wallBottomMesh.position.copy(
+    new THREE.Vector3().set(
+      wallBottom.position.x,
+      wallBottom.position.y,
+      wallBottom.position.z
+    )
+  );
   wallBottomMesh.rotation.set(Math.PI, 0, Math.PI);
   scene.add(wallBottomMesh);
 }

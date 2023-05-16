@@ -5,11 +5,14 @@ import { AudioWriter } from "types";
 const btn = document.querySelector("#start") as HTMLButtonElement;
 const app = document.querySelector("#app") as HTMLDivElement;
 talk();
-btn.onclick = goToBattle;
+btn.onclick = () => {
+  localStorage.setItem("expertMode", "false");
+  goToBattle();
+};
 
 //replace the html with the battle html
 function goToBattle() {
-  console.log("go to battle")
+  console.log("go to battle");
   const leaveHome = new CustomEvent("leaveHome");
   document.dispatchEvent(leaveHome);
 
@@ -51,7 +54,7 @@ function goToBattle() {
   app.style.alignItems = "";
   app.innerHTML = battleHTML;
   //load the battle script
-  console.log("load battle")
+  console.log("load battle");
   import("./main");
 }
 
@@ -84,10 +87,18 @@ async function talk() {
   await writeText("Welcome to UnderDice!", ".bubbleBelow", audioToPlay);
   await delay(500);
   if (skip) return;
-  await writeText("In this game You'll have to fight Sans ", ".bubbleBelow", audioToPlay);
+  await writeText(
+    "In this game You'll have to fight Sans ",
+    ".bubbleBelow",
+    audioToPlay
+  );
   await delay(1000);
   if (skip) return;
-  await writeText("For this you will throw two dice", ".bubbleBelow", audioToPlay);
+  await writeText(
+    "For this you will throw two dice",
+    ".bubbleBelow",
+    audioToPlay
+  );
   await delay(500);
   await writeText(
     "One that will determine the damage you will do to Sans",
@@ -96,21 +107,24 @@ async function talk() {
   );
   await delay(1000);
   if (skip) return;
-  await writeText("And another that will determine the damage you will receive", ".bubbleBelow", audioToPlay);
+  await writeText(
+    "And another that will determine the damage you will receive",
+    ".bubbleBelow",
+    audioToPlay
+  );
   await delay(1000);
   if (skip) return;
   await writeText("Good luck", ".bubbleBelow", audioToPlay);
   btn.style.display = "block";
-  if(localStorage.getItem("expert") === "unlocked") {
+  if (localStorage.getItem("expert") === "unlocked") {
     const btnExp = document.createElement("button");
     btnExp.innerText = "Expert Mode";
     btnExp.id = "expert";
     btnExp.style.display = "block";
     btnExp.onclick = () => {
-      localStorage.setItem("expert", "true");
+      localStorage.setItem("expertMode", "true");
       goToBattle();
-    }
+    };
     btn.after(btnExp);
-
   }
 }

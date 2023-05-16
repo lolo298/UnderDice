@@ -1,4 +1,10 @@
-import { AudioWriter, AudioWriterSettings, CSSselector, EventCreator, Game } from "types";
+import {
+  AudioWriter,
+  AudioWriterSettings,
+  CSSselector,
+  EventCreator,
+  Game,
+} from "types";
 import throwDice from "./Dices";
 let GameInstance: Game;
 declare global {
@@ -7,7 +13,6 @@ declare global {
     phrases: string[];
   }
 }
-
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -29,26 +34,18 @@ export async function writeText(
     if (audio.settings) audioSettings = audio.settings;
     audioType = audioSettings?.name;
     if (audioSettings) {
-      for (const setting in audioSettings) audioToPlay[setting] = audioSettings[setting];
+      for (const setting in audioSettings)
+        audioToPlay[setting] = audioSettings[setting];
     }
-    document.addEventListener(
-      "leaveHome",
-      () => {
-        if (audioToPlay == null) return;
-        audioToPlay.pause();
-        audioToPlay.currentTime = 0;
-      },
-      { once: true }
-    );
-        document.addEventListener(
-          "toBattle",
-          () => {
-            if (audioToPlay == null) return;
-            audioToPlay.pause();
-            audioToPlay.currentTime = 0;
-          },
-          { once: true }
-        );
+    const stopAudio = () => {
+      if (audioToPlay == null) return;
+      audioToPlay.pause();
+      audioToPlay.currentTime = 0;
+    };
+    document.addEventListener("leaveHome", stopAudio, { once: true });
+    document.addEventListener("toBattle", stopAudio, { once: true });
+    document.addEventListener("stopText", stopAudio, { once: true });
+
     audioToPlay.play();
   } else {
     audioToPlay = GameInstance.sounds.type;
@@ -111,9 +108,11 @@ export function selectOption(target: HTMLImageElement | number[]) {
   if (target instanceof Array) {
     value = menu.children[target.indexOf(1)].id;
   }
+  const stopTextEvent = createCustomEvent("stopText");
   switch (value) {
     // Fight
     case "fight": {
+      document.dispatchEvent(stopTextEvent);
       toBattle();
       break;
     }
@@ -156,7 +155,9 @@ export function toMenu() {
   if (GameInstance.state === "win" || GameInstance.state === "lose") return;
   const menuEvent = createCustomEvent("toMenu");
   const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  const gameWidth = getComputedStyle(document.documentElement).getPropertyValue("--gameWidth");
+  const gameWidth = getComputedStyle(document.documentElement).getPropertyValue(
+    "--gameWidth"
+  );
   terrain.animate([{ width: gameWidth }], {
     duration: 500,
     fill: "forwards",

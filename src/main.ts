@@ -1,7 +1,13 @@
 import "./style.css";
 import "./fonts/stylesheet.css";
 import Game from "./Game";
-import { writeText, newEvent, randomNumber, selectOption, removeEvent } from "./functions";
+import {
+  writeText,
+  newEvent,
+  randomNumber,
+  selectOption,
+  removeEvent,
+} from "./functions";
 import { CSSselector } from "types";
 //load the game
 const GameInstance = new Game();
@@ -33,9 +39,9 @@ const menuEventTargets = ["#menu", "#menu", null];
 function handleKeyDown(e: Event) {
   if (!(e instanceof KeyboardEvent)) return;
   //check if we are in the menu
-  if (GameInstance.state === "attack" || GameInstance.state === "defend") return;
+  if (GameInstance.state === "attack" || GameInstance.state === "defend")
+    return;
 
-  
   //Select the options with the arrow keys
   const menu = document.querySelector("#menu") as HTMLDivElement;
   switch (e.code) {
@@ -69,7 +75,10 @@ function handleKeyDown(e: Event) {
       menuSelect[id + 1] = 1;
       selected.classList.toggle("selected");
       next.classList.toggle("selected");
-      next.src = next.src.replace(next.id.toUpperCase(), next.id.toUpperCase() + "selected");
+      next.src = next.src.replace(
+        next.id.toUpperCase(),
+        next.id.toUpperCase() + "selected"
+      );
       selected.src = selected.src.replace(
         selected.id.toUpperCase() + "selected",
         selected.id.toUpperCase()
@@ -108,7 +117,10 @@ function handleMouseMove(e: Event) {
     );
     oldSelected.classList.remove("selected");
   }
-  target.src = target.src.replace(target.id.toUpperCase(), target.id.toUpperCase() + "selected");
+  target.src = target.src.replace(
+    target.id.toUpperCase(),
+    target.id.toUpperCase() + "selected"
+  );
   target.classList.add("selected");
   switch (target.id) {
     case "fight": {
