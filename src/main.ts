@@ -1,11 +1,12 @@
 import "./style.css";
 import "./fonts/stylesheet.css";
 import Game from "./Game";
-console.log("Hello World");
 import { writeText, newEvent, randomNumber, selectOption, removeEvent } from "./functions";
 import { CSSselector } from "types";
-globalThis.GameInstance = new Game();
-globalThis.phrases = [
+//load the game
+const GameInstance = new Game();
+window.GameInstance = GameInstance;
+const phrases = [
   "* You felt your sins crawling on your back.",
   "* You felt your sins crawling on your neck.",
   "* Your filled with determination",
@@ -13,16 +14,14 @@ globalThis.phrases = [
   "* Reading this doesn't seem like the best use of your time.",
   "* Sans is preparing something.",
 ];
-
+window.phrases = phrases;
 GameInstance.sounds.musique.play();
-let phrases = globalThis.phrases;
 let menuSelect = [1, 0, 0, 0];
-// let timeoutRewrite: number;
-// await delay(1000);
-// @ts-ignore
-window["phrases"] = phrases;
+
+//write a random phrase on the terrain
 writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
 
+//create the events hanlers
 newEvent("keydown", handleKeyDown);
 newEvent("mousemove", handleMouseMove, "#menu");
 newEvent("click", handleClick, "#menu");
@@ -33,15 +32,17 @@ const menuEventTargets = ["#menu", "#menu", null];
 
 function handleKeyDown(e: Event) {
   if (!(e instanceof KeyboardEvent)) return;
+  //check if we are in the menu
   if (GameInstance.state === "attack" || GameInstance.state === "defend") return;
+
+  
+  //Select the options with the arrow keys
   const menu = document.querySelector("#menu") as HTMLDivElement;
-  // const terrain = document.querySelector("#terrain") as HTMLDivElement;
-  // let p = document.createElement("p");
   switch (e.code) {
     case "ArrowLeft": {
-      let id = menuSelect.indexOf(1);
-      let selected = menu.children[id] as HTMLImageElement;
-      let previous = menu.children[id - 1] as HTMLImageElement;
+      const id = menuSelect.indexOf(1);
+      const selected = menu.children[id] as HTMLImageElement;
+      const previous = menu.children[id - 1] as HTMLImageElement;
       if (id === 0) break;
       GameInstance.sounds.menu.play();
       menuSelect[id] = 0;
@@ -59,9 +60,9 @@ function handleKeyDown(e: Event) {
       break;
     }
     case "ArrowRight": {
-      let id = menuSelect.indexOf(1);
-      let selected = menu.children[id] as HTMLImageElement;
-      let next = menu.children[id + 1] as HTMLImageElement;
+      const id = menuSelect.indexOf(1);
+      const selected = menu.children[id] as HTMLImageElement;
+      const next = menu.children[id + 1] as HTMLImageElement;
       if (id === 3) break;
       GameInstance.sounds.menu.play();
       menuSelect[id] = 0;
@@ -82,6 +83,7 @@ function handleKeyDown(e: Event) {
   }
 }
 
+//Change the option image when the mouse is over it
 let lastTarget: HTMLImageElement;
 function handleMouseMove(e: Event) {
   if (!(e instanceof MouseEvent)) return;
@@ -98,7 +100,7 @@ function handleMouseMove(e: Event) {
   lastTarget = target;
   if (target.classList.contains("selected")) return;
   GameInstance.sounds.menu.play();
-  let oldSelected = document.querySelector(".selected") as HTMLImageElement;
+  const oldSelected = document.querySelector(".selected") as HTMLImageElement;
   if (oldSelected) {
     oldSelected.src = oldSelected.src.replace(
       oldSelected.id.toUpperCase() + "selected",
@@ -127,6 +129,8 @@ function handleMouseMove(e: Event) {
     }
   }
 }
+
+// Select the option
 function handleClick(e: Event) {
   if (!(e instanceof MouseEvent)) return;
   const target = e.target;
@@ -135,24 +139,25 @@ function handleClick(e: Event) {
   selectOption(target);
 }
 
+//lock and unlock the menu from user input
 function unlockMenu() {
   const menu = document.querySelector("#menu") as HTMLDivElement;
   menu.style.pointerEvents = "auto";
   menuEvents.forEach((event, key) => {
-    let eventName = event as keyof HTMLElementEventMap;
-    newEvent(eventName, menuEventFunctions[key] as any, "#menu");
+    const eventName = event as keyof HTMLElementEventMap;
+    newEvent(eventName, menuEventFunctions[key], "#menu");
   });
 }
 function lockMenu() {
   const menu = document.querySelector("#menu") as HTMLDivElement;
   menu.style.pointerEvents = "none";
   menuEvents.forEach((event, key) => {
-    let eventName = event as keyof HTMLElementEventMap;
-    let eventTarget = menuEventTargets[key] as CSSselector | null;
+    const eventName = event as keyof HTMLElementEventMap;
+    const eventTarget = menuEventTargets[key] as CSSselector | null;
     if (eventTarget) {
-      removeEvent(eventName, menuEventFunctions[key] as any, eventTarget);
+      removeEvent(eventName, menuEventFunctions[key], eventTarget);
     } else {
-      removeEvent(eventName, menuEventFunctions[key] as any);
+      removeEvent(eventName, menuEventFunctions[key]);
     }
   });
 

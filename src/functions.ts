@@ -1,15 +1,26 @@
-import { AudioWriter, AudioWriterSettings, CSSselector, EventCreator } from "types";
+import { AudioWriter, AudioWriterSettings, CSSselector, EventCreator, Game } from "types";
 import throwDice from "./Dices";
+let GameInstance: Game;
+declare global {
+  interface Window {
+    GameInstance?: Game;
+    phrases: string[];
+  }
+}
+
 
 export function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
-export let lastTimeout: number;
+//write the text letter by letter with the sound wanted
+let lastTimeout: number;
 export async function writeText(
   phrase: string,
   target: CSSselector,
   audio: AudioWriter | null = null
 ) {
+  if (window.GameInstance) GameInstance = window.GameInstance;
+
   let audioToPlay: HTMLAudioElement | null = null;
   let audioSettings: AudioWriterSettings | null = null;
   let audioType: string | undefined;
@@ -18,8 +29,7 @@ export async function writeText(
     if (audio.settings) audioSettings = audio.settings;
     audioType = audioSettings?.name;
     if (audioSettings) {
-      // @ts-ignore
-      for (let setting in audioSettings) audioToPlay[setting] = audioSettings[setting];
+      for (const setting in audioSettings) audioToPlay[setting] = audioSettings[setting];
     }
     document.addEventListener(
       "leaveHome",
@@ -30,6 +40,15 @@ export async function writeText(
       },
       { once: true }
     );
+        document.addEventListener(
+          "toBattle",
+          () => {
+            if (audioToPlay == null) return;
+            audioToPlay.pause();
+            audioToPlay.currentTime = 0;
+          },
+          { once: true }
+        );
     audioToPlay.play();
   } else {
     audioToPlay = GameInstance.sounds.type;
@@ -39,13 +58,13 @@ export async function writeText(
   const container = document.querySelector(target);
   if (!container) throw new Error("container is not an HTMLElement");
   container.innerHTML = "";
-  let p = document.createElement("p");
+  const p = document.createElement("p");
   container.appendChild(p);
   if (lastTimeout) clearTimeout(lastTimeout);
-  for (let letter of phrase) {
+  for (const letter of phrase) {
     if (audioType == "type") {
       console.log("type");
-      let loopAudio = audioToPlay?.cloneNode() as HTMLAudioElement;
+      const loopAudio = audioToPlay?.cloneNode() as HTMLAudioElement;
       loopAudio.volume = GameInstance.sounds.type.volume;
       loopAudio.playbackRate = GameInstance.sounds.type.playbackRate;
       loopAudio.loop = false;
@@ -78,9 +97,11 @@ export const removeEvent: EventCreator = (type, callback, target) => {
   }
 };
 
-export const randomNumber = (max: number, min: number = 0) => {
+export const randomNumber = (max: number, min = 0) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
+
+//select the option in the menu
 export function selectOption(target: HTMLImageElement | number[]) {
   const menu = document.querySelector("#menu") as HTMLDivElement;
   let value = "";
@@ -114,6 +135,7 @@ export function selectOption(target: HTMLImageElement | number[]) {
   }
 }
 
+//change the UI to the battle UI
 export async function toBattle() {
   GameInstance.state = "attack";
   const battleEvent = createCustomEvent("toBattle");
@@ -129,6 +151,7 @@ export async function toBattle() {
   document.dispatchEvent(battleEvent);
 }
 
+//change the UI to the menu UI
 export function toMenu() {
   if (GameInstance.state === "win" || GameInstance.state === "lose") return;
   const menuEvent = createCustomEvent("toMenu");
@@ -141,6 +164,7 @@ export function toMenu() {
   });
   terrain.classList.toggle("fight");
   terrain.innerHTML = "";
+  const phrases = window.phrases;
   writeText(phrases[randomNumber(phrases.length - 1)], "#terrain");
   document.dispatchEvent(menuEvent);
 }

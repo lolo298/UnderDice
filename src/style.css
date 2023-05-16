@@ -4,7 +4,8 @@
   font-weight: 400;
   --gameWidth: 80%;
 
-  color-scheme: light dark;
+  user-select: none;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
   /* background-color: #242424; */
   background-color: #000;
@@ -33,6 +34,27 @@ body {
   width: 100vw;
   height: 100vh;
   padding: 0 1rem;
+}
+
+#start, #expert {
+  display: none;
+  font-family: "8bitoperator Regular";
+  font-size: 2rem;
+  border: none;
+  background-color: transparent;
+  color: #fff;
+}
+
+#start:focus,
+#start:hover,
+#expert:focus,
+#expert:hover {
+  color: #f5f642;
+  outline: none;
+}
+
+#expert {
+  font-size: 1.5rem;
 }
 
 #battle {

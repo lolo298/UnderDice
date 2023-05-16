@@ -1,16 +1,16 @@
 import "./style.css";
 import "./fonts/stylesheet.css";
-import { writeText, delay } from "./functions";
 import { AudioWriter } from "types";
 
 const btn = document.querySelector("#start") as HTMLButtonElement;
-// const title = document.querySelector("hI") as HTMLDivElement;
 const app = document.querySelector("#app") as HTMLDivElement;
 talk();
 btn.onclick = goToBattle;
 
+//replace the html with the battle html
 function goToBattle() {
-  let leaveHome = new CustomEvent("leaveHome");
+  console.log("go to battle")
+  const leaveHome = new CustomEvent("leaveHome");
   document.dispatchEvent(leaveHome);
 
   const battleHTML = `
@@ -50,35 +50,15 @@ function goToBattle() {
   app.style.justifyContent = "";
   app.style.alignItems = "";
   app.innerHTML = battleHTML;
-  // const battleScript = document.createElement("script");
-  // battleScript.src = "src/main.ts";
-  // battleScript.type = "module";
-  // battleScript.async = true;
-  // document.body.appendChild(battleScript);
+  //load the battle script
+  console.log("load battle")
   import("./main");
 }
 
-// function goToHome() {
-//   const homeHTML = `
-//   <div id="home">
-//     <h1>UNDERTALE</h1>
-//     <button id="start">START</button>
-//   </div>
-//   `;
-//   app.style.display = "flex";
-//   app.style.flexDirection = "column";
-//   app.style.justifyContent = "flex-start";
-//   app.style.alignItems = "center";
-//   app.innerHTML = homeHTML;
-//   const homeScript = document.createElement("script");
-//   homeScript.src = "src/index.ts";
-//   homeScript.type = "module";
-//   homeScript.async = true;
-//   document.body.appendChild(homeScript);
-// }
-
+//start the conversation
 async function talk() {
-  let audioToPlay: AudioWriter = {
+  const { writeText, delay } = await import("./functions");
+  const audioToPlay: AudioWriter = {
     url: "./assets/sounds/snd_floweytalk1.wav",
     settings: {
       name: "flowey",
@@ -107,15 +87,30 @@ async function talk() {
   await writeText("In this game You'll have to fight Sans ", ".bubbleBelow", audioToPlay);
   await delay(1000);
   if (skip) return;
+  await writeText("For this you will throw two dice", ".bubbleBelow", audioToPlay);
+  await delay(500);
   await writeText(
-    "For this you will throw a dice that will determine the damage you will deal",
+    "One that will determine the damage you will do to Sans",
     ".bubbleBelow",
     audioToPlay
   );
   await delay(1000);
   if (skip) return;
-  await writeText("And another one to take less damage", ".bubbleBelow", audioToPlay);
+  await writeText("And another that will determine the damage you will receive", ".bubbleBelow", audioToPlay);
   await delay(1000);
   if (skip) return;
   await writeText("Good luck", ".bubbleBelow", audioToPlay);
+  btn.style.display = "block";
+  if(localStorage.getItem("expert") === "unlocked") {
+    const btnExp = document.createElement("button");
+    btnExp.innerText = "Expert Mode";
+    btnExp.id = "expert";
+    btnExp.style.display = "block";
+    btnExp.onclick = () => {
+      localStorage.setItem("expert", "true");
+      goToBattle();
+    }
+    btn.after(btnExp);
+
+  }
 }

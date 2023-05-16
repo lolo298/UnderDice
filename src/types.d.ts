@@ -5,6 +5,7 @@ declare module "types" {
     target?: CSSselector
   ) => void;
   export type CSSselector = keyof HTMLElementTagNameMap | `.${string}` | `#${string}`;
+  import CANNON from "cannon-es";
   export type CANNONEvent = {
     type: "sleepy" | "sleep";
     target: CANNON.Body;
@@ -12,10 +13,10 @@ declare module "types" {
   export interface Window {
     GameInstance?: Game;
   }
-  declare global {
-    var GameInstance: Game;
-    var phrases: string[];
-    var lastTimeout: number;
+   global {
+    let GameInstance: Game;
+    let phrases: string[];
+    let lastTimeout: number;
   }
   export type gameState = "attack" | "defend" | "idle" | "lose" | "win";
   export interface Game {
@@ -47,9 +48,20 @@ declare module "types" {
     settings: AudioWriterSettings;
   }
   interface AudioWriterSettings {
+    [key: string]: any;
     name: string;
     volume?: number;
     loop?: boolean;
     playbackRate?: number;
+  }
+}
+
+declare interface HTMLAudioElement {
+  [key: string]: any;
+}
+
+declare global {
+  interface Window {
+    GameInstance: Game;
   }
 }

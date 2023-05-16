@@ -166,7 +166,7 @@ export default class CannonDebugRenderer {
         mesh = new THREE.Points(this._particleGeometry, this._particleMaterial);
         break;
 
-      case CANNON.Shape.types.CONVEXPOLYHEDRON:
+      case CANNON.Shape.types.CONVEXPOLYHEDRON: {
         // Create mesh
         geometry = new THREE.BufferGeometry();
         shape.id = geometry.id;
@@ -192,7 +192,7 @@ export default class CannonDebugRenderer {
 
         mesh = new THREE.Mesh(geometry, material);
 
-        break;
+        break;}
 
       case CANNON.Shape.types.TRIMESH:
         geometry = new THREE.BufferGeometry();

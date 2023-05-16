@@ -3,11 +3,11 @@ import Dice from "./Dices";
 import { delay, randomNumber, toMenu, writeText } from "./functions";
 
 export default class Game {
-  private sansLife: number = 20;
-  private sansLifeMax: number = 20;
+  private sansLife = 20;
+  private sansLifeMax = 20;
   private sansSprite: HTMLImageElement;
-  private charaLife: number = 20;
-  private charaLifeMax: number = 20;
+  private charaLife = 20;
+  private charaLifeMax = 20;
   private charaLifeBar: HTMLElement;
   private charaLifeCounter: HTMLElement;
   private attackSprite: HTMLImageElement;
@@ -24,6 +24,7 @@ export default class Game {
     menu: new Audio("./assets/sounds/mus_sfx_a_target.wav"),
   };
   public state: gameState = "idle";
+  private expertMode = false;
 
   public constructor() {
     const charaLifeBar = document.querySelector("#lifeBar #current");
@@ -60,7 +61,7 @@ export default class Game {
     this.sounds.damage.volume = 0.5;
     this.sounds.slice.volume = 0.5;
     this.sounds.type.volume = 0.5;
-    this.sounds.musique.volume = 0.2;
+    this.sounds.musique.volume = 0.1;
     this.sounds.menu.volume = 0.5;
 
     this.sounds.slice.playbackRate = 0.7;
@@ -68,6 +69,11 @@ export default class Game {
 
     // this.sounds.type.loop = true;
     this.sounds.musique.loop = true;
+
+    if(localStorage.getItem("expert") === "true"){
+      this.expertMode = true;
+      this.sansLife = 30;
+    }
   }
 
   public getCharaLife(): number {
@@ -82,15 +88,19 @@ export default class Game {
   public getSansLifeMax(): number {
     return this.sansLifeMax;
   }
+
   public attack(damage: number): void {
     this.sansLife -= damage;
     this.damageSprite.src = `./assets/damages/spr_dmgnum_${damage}.png`;
     this.sounds.slice.play();
-    //30FPS
+
+    //emulate an animation at 30fps 
     const fps = 30;
     let frames = 0;
     let attack = 0;
     const interval = setInterval(() => {
+      let sansHitAnimation;
+      //end of the animation
       if (frames >= 30) {
         this.sounds.slice.pause();
         this.sounds.slice.currentTime = 0;
@@ -108,28 +118,31 @@ export default class Game {
         }, 500);
         return;
       }
+      //shake the sans sprite every 10 frames
       if (frames % 10 === 0) {
         this.sansSprite.src = `./assets/Sans_fatal.png`;
 
-        let keyframes = [
+        const keyframes = [
           { transform: "translateX(0px)" },
           { transform: "translateX(-10px)" },
           { transform: "translateX(0px)" },
         ];
-        let options = {
+        const options = {
           duration: (1000 / fps) * 10,
           iterations: 1,
           easing: "steps(3, end)",
         };
-        var sansHitAnimation = this.sansSprite.animate(keyframes, options);
+        sansHitAnimation = this.sansSprite.animate(keyframes, options);
       }
+      //change the attack sprite every 5 frames
       if (frames % 5 === 0) {
         this.attackSprite.src = `./assets/spr_slice_o_${attack}.png`;
         attack++;
+        //check at the mid of the animation if sans is dead
         if (attack === 3) {
           this.checkEnd();
           if (this.state === "win") {
-            // @ts-ignore
+            if(!sansHitAnimation)return;
             sansHitAnimation.pause();
             this.sansSprite.src = "./assets/Sans_fatal_end.png";
             this.damageSprite.remove();
@@ -144,10 +157,9 @@ export default class Game {
       frames++;
     }, 1000 / fps);
   }
+
   public defend(DefendingDamage: number): void {
-    let damage = 6 - DefendingDamage;
-    console.log("dice result: " + DefendingDamage);
-    console.log("damage: " + damage);
+    const damage = 6 - DefendingDamage;
     setTimeout(() => {
       this.terrain.innerHTML = "";
       const soul = document.createElement("img");
@@ -158,6 +170,7 @@ export default class Game {
     }, 500);
   }
 
+  //spawn a blaster and a laser and animate them
   public async spawnBlaster(soul: HTMLImageElement, damage: number): Promise<void> {
     this.terrain.classList.add("fight");
     const blaster = document.createElement("img");
@@ -168,22 +181,22 @@ export default class Game {
     laser.classList.add("laser");
     document.querySelector("#app")?.appendChild(laser);
     this.sounds.blasterSpawn.play();
-    let keyframes = [
+    let keyframes: Keyframe[] = [
       { transform: `scale(0) rotate(0) ` },
-      { transform: `scale(6) rotate(450deg)` }, //rotate(${360 + angleDeg}deg)
+      { transform: `scale(6) rotate(450deg)` },
     ];
-    let options = {
+    let options: KeyframeAnimationOptions = {
       duration: 1000,
       iterations: 1,
       easing: "ease-in-out",
-      fill: "forwards" as "forwards",
+      fill: "forwards" as const,
     };
-    let blasterAnimation = blaster.animate(keyframes, options);
+    const blasterAnimation = blaster.animate(keyframes, options);
     const fps = 60;
     let frames = 0;
     let img = 0;
     await new Promise((r) => {
-      let interval = setInterval(() => {
+      const interval = setInterval(() => {
         if (frames >= 60) {
           clearInterval(interval);
           this.sansSprite.src = "./assets/Sans_idle.gif";
@@ -199,35 +212,39 @@ export default class Game {
       }, 1000 / fps);
     });
     await blasterAnimation.finished;
-    //@ts-ignore
+
     keyframes = [{ maxWidth: "0%" }, { maxWidth: "100%" }];
     options = {
       duration: 400,
       iterations: 1,
       easing: "ease-in-out",
-      fill: "forwards" as "forwards",
+      fill: "forwards" as const,
     };
+    let soulKeyframes: Keyframe[];
+    let soulOptions: KeyframeAnimationOptions;
     if (damage === 0) {
-      var soulKeyframes = [
+      soulKeyframes = [
         { transform: `translate(0,0) ` },
         { transform: `translate(0, 800%)` }, //rotate(${360 + angleDeg}deg)
       ];
-      var soulOptions = {
+      soulOptions = {
         duration: 300,
         iterations: 1,
         easing: "ease-in-out",
-        fill: "forwards" as "forwards",
+        fill: "forwards" as const,
       };
     }
     frames = 0;
     img = 0;
-    let interval = setInterval(async () => {
+    //animate the laser
+    const interval = setInterval(async () => {
       if (frames >= 30) {
         clearInterval(interval);
         this.sounds.blasterHit.play();
         soul.animate(soulKeyframes, soulOptions);
-        let laserAnimation = laser.animate(keyframes, options);
+        const laserAnimation = laser.animate(keyframes, options);
         setTimeout(() => {
+          //update the life bar
           this.charaLife -= damage;
           this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
           this.charaLifeCounter.innerText = `${this.charaLife}/${this.charaLifeMax}`;
@@ -242,16 +259,14 @@ export default class Game {
         }, 400);
         await laserAnimation.finished;
         keyframes = [
-          //@ts-ignore
           { transform: `scale(1, 1)`, opacity: 1 },
-          //@ts-ignore
           { transform: `scale(1, 0.5)`, opacity: 0 },
         ];
         options = {
           duration: 1000,
           iterations: 1,
           easing: "ease-in-out",
-          fill: "forwards" as "forwards",
+          fill: "forwards" as const,
         };
         laser.animate(keyframes, options);
         await blaster.animate({ opacity: 0 }, { duration: 1000, iterations: 1 }).finished;
@@ -263,6 +278,7 @@ export default class Game {
         toMenu();
         return;
       }
+      //emulate the blaster animation
       if (frames % 5 === 0) {
         blaster.src = `./assets/sansAttacks/spr_gasterblaster_${img}.png`;
         img++;
@@ -281,8 +297,9 @@ export default class Game {
       return;
     }
   }
+
   public toGameOver(): void {
-    let gameOverPhrases = [
+    const gameOverPhrases = [
       "Don't lose hope",
       "You cannot give up just yet ... CHARA! Stay determined!",
       "Don't lose hope! CHARA! Stay determined!",
@@ -292,6 +309,7 @@ export default class Game {
       "wake up! It's not over!",
       "Please don't give up...",
     ];
+    //create the background for the lose screen and write a phrase
     const endBackground = document.createElement("div");
     endBackground.classList.add("endBackground");
     document.querySelector("#app")?.appendChild(endBackground);
@@ -305,6 +323,7 @@ export default class Game {
     const rng = randomNumber(gameOverPhrases.length - 1);
     writeText(gameOverPhrases[rng], ".endText");
   }
+
   public async toWin(): Promise<void> {
     GameInstance.sounds.musique.pause();
     document.querySelector(".blaster")?.remove();
@@ -339,14 +358,20 @@ export default class Game {
         },
       }
     );
+    await delay(1000);
+
+    localStorage.setItem("expert", "unlocked");
+    //reload the page
+    location.reload();
+    
   }
 
   public spawnFlowey(): void {
     const fps = 60;
     let frames = 0;
     let img = 0;
-    let imgPerFps = Math.ceil(fps / 9);
-    let interval = setInterval(() => {
+    const imgPerFps = Math.ceil(fps / 9);
+    const interval = setInterval(() => {
       if (frames >= 60) {
         clearInterval(interval);
         this.floweySprite.src = "./assets/flowey/Flowey_battle_talk.gif";
