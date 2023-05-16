@@ -92,7 +92,7 @@ export default class Game {
 
   public attack(damage: number): void {
     const avoiding = randomNumber(0, 100);
-    if (avoiding <= 10) {
+    if (this.expertMode && avoiding <= 10) {
       this.avoid();
       return;
     }
