@@ -1,7 +1,8 @@
 # UnderDice
 
-UnderDice is a simple dice-rolling game built with Three.js and Vite.
-The game is available at [https://under-dice.vercel.app/](https://under-dice.vercel.app/).
+UnderDice is a simple dice-rolling game built with Three.js and Vite. <br />
+The game is available at [https://under-dice.vercel.app/](https://under-dice.vercel.app/).<br />
+The git is available at [https://github.com/lolo298/UnderDice](https://github.com/lolo298/UnderDice).
 
 ## Launching dev version of UnderDice with Vite
 
