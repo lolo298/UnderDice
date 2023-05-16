@@ -44,7 +44,8 @@ export default class Game {
       throw new Error("sansSprite is not an HTMLImageElement");
     if (!(damageSprite instanceof HTMLImageElement))
       throw new Error("damageSprite is not an HTMLImageElement");
-    if (!(terrain instanceof HTMLDivElement)) throw new Error("terrain is not an HTMLDivElement");
+    if (!(terrain instanceof HTMLDivElement))
+      throw new Error("terrain is not an HTMLDivElement");
     if (!(floweySprite instanceof HTMLImageElement))
       throw new Error("floweySprite is not an HTMLImageElement");
 
@@ -70,7 +71,7 @@ export default class Game {
     // this.sounds.type.loop = true;
     this.sounds.musique.loop = true;
 
-    if(localStorage.getItem("expert") === "true"){
+    if (localStorage.getItem("expertMode") === "true") {
       this.expertMode = true;
       this.sansLife = 30;
     }
@@ -90,11 +91,16 @@ export default class Game {
   }
 
   public attack(damage: number): void {
+    const avoiding = randomNumber(0, 100);
+    if (avoiding <= 10) {
+      this.avoid();
+      return;
+    }
     this.sansLife -= damage;
     this.damageSprite.src = `./assets/damages/spr_dmgnum_${damage}.png`;
     this.sounds.slice.play();
 
-    //emulate an animation at 30fps 
+    //emulate an animation at 30fps
     const fps = 30;
     let frames = 0;
     let attack = 0;
@@ -142,7 +148,7 @@ export default class Game {
         if (attack === 3) {
           this.checkEnd();
           if (this.state === "win") {
-            if(!sansHitAnimation)return;
+            if (!sansHitAnimation) return;
             sansHitAnimation.pause();
             this.sansSprite.src = "./assets/Sans_fatal_end.png";
             this.damageSprite.remove();
@@ -153,6 +159,68 @@ export default class Game {
             return;
           }
         }
+      }
+      frames++;
+    }, 1000 / fps);
+  }
+
+  public avoid(): void {
+    this.sounds.slice.play();
+    this.damageSprite.src = `./assets/damages/spr_dmgmiss_o_0.png`;
+
+    const keyframes: Keyframe[] = [
+      { transform: "translateX(0%)" },
+      { transform: "translateX(-100%)" },
+    ];
+    const options: KeyframeAnimationOptions = {
+      duration: 200,
+      iterations: 1,
+      easing: "ease-in",
+      fill: "forwards",
+    };
+
+    this.sansSprite.animate(keyframes, options);
+
+    //emulate an animation at 30fps
+    const fps = 30;
+    let frames = 0;
+    let attack = 0;
+    const interval = setInterval(() => {
+      //end of the animation
+      if (frames >= 30) {
+        this.sounds.slice.pause();
+        this.sounds.slice.currentTime = 0;
+        this.attackSprite.src = "";
+        this.damageSprite.src = "";
+
+        const keyframes: Keyframe[] = [
+          { transform: "translateX(-100%)" },
+          { transform: "translateX(0%)" },
+        ];
+        const options: KeyframeAnimationOptions = {
+          duration: 500,
+          iterations: 1,
+          easing: "ease-out",
+          fill: "forwards",
+        };
+
+        this.sansSprite.animate(keyframes, options);
+
+        clearInterval(interval);
+        const terrain = document.querySelector("#terrain");
+        if (!(terrain instanceof HTMLDivElement))
+          throw new Error("terrain is not an HTMLDivElement");
+        terrain.innerHTML = "";
+        setTimeout(() => {
+          this.state = "defend";
+          Dice();
+        }, 500);
+        return;
+      }
+      //change the attack sprite every 5 frames
+      if (frames % 5 === 0) {
+        this.attackSprite.src = `./assets/spr_slice_o_${attack}.png`;
+        attack++;
       }
       frames++;
     }, 1000 / fps);
@@ -171,7 +239,10 @@ export default class Game {
   }
 
   //spawn a blaster and a laser and animate them
-  public async spawnBlaster(soul: HTMLImageElement, damage: number): Promise<void> {
+  public async spawnBlaster(
+    soul: HTMLImageElement,
+    damage: number
+  ): Promise<void> {
     this.terrain.classList.add("fight");
     const blaster = document.createElement("img");
     blaster.src = "./assets/sansAttacks/spr_gasterblaster_0.png";
@@ -225,7 +296,7 @@ export default class Game {
     if (damage === 0) {
       soulKeyframes = [
         { transform: `translate(0,0) ` },
-        { transform: `translate(0, 800%)` }, //rotate(${360 + angleDeg}deg)
+        { transform: `translate(0, 800%)` },
       ];
       soulOptions = {
         duration: 300,
@@ -246,7 +317,9 @@ export default class Game {
         setTimeout(() => {
           //update the life bar
           this.charaLife -= damage;
-          this.charaLifeBar.style.width = `${(this.charaLife / this.charaLifeMax) * 100}%`;
+          this.charaLifeBar.style.width = `${
+            (this.charaLife / this.charaLifeMax) * 100
+          }%`;
           this.charaLifeCounter.innerText = `${this.charaLife}/${this.charaLifeMax}`;
           this.checkEnd();
           if (this.state === "lose") {
@@ -269,7 +342,8 @@ export default class Game {
           fill: "forwards" as const,
         };
         laser.animate(keyframes, options);
-        await blaster.animate({ opacity: 0 }, { duration: 1000, iterations: 1 }).finished;
+        await blaster.animate({ opacity: 0 }, { duration: 1000, iterations: 1 })
+          .finished;
         blaster.remove();
         laser.remove();
         soul.remove();
@@ -335,15 +409,19 @@ export default class Game {
     await delay(1000);
     bubble.style.backgroundImage = 'url("./assets/spr_blconabove_0.png")';
     console.log("done");
-    await writeText("Well done on beating Sans. You really are ... a terrifying human", ".bubble", {
-      url: "./assets/sounds/snd_floweytalk1.wav",
-      settings: {
-        name: "flowey",
-        volume: 0.5,
-        loop: true,
-        playbackRate: 0.8,
-      },
-    });
+    await writeText(
+      "Well done on beating Sans. You really are ... a terrifying human",
+      ".bubble",
+      {
+        url: "./assets/sounds/snd_floweytalk1.wav",
+        settings: {
+          name: "flowey",
+          volume: 0.5,
+          loop: true,
+          playbackRate: 0.8,
+        },
+      }
+    );
     await delay(1000);
     await writeText(
       "Now you've completed the game. But it's not like you can go back and change anything",
@@ -363,10 +441,10 @@ export default class Game {
     localStorage.setItem("expert", "unlocked");
     //reload the page
     location.reload();
-    
   }
 
   public spawnFlowey(): void {
+    console.trace();
     const fps = 60;
     let frames = 0;
     let img = 0;
