@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="style.css" />
     <style>
       h1 {
-        font-size: 10rem;
+        font-size: 7rem;
         color: #fff;
-        text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 1px 1px #000, -1px -1px #000,
-          1px -1px #000, -1px 1px #000, 3px 3px #000, -3px -3px #000, 3px -3px #000, -3px 3px #000,
-          0 0 5px #fff, 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #f00, 0 0 40px #f00, 0 0 50px #f00,
-          0 0 100px #f00, 1px 1px 0 #f0f;
+        text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000,
+          1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000,
+          3px 3px #000, -3px -3px #000, 3px -3px #000, -3px 3px #000,
+          0 0 5px #fff, 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #f00,
+          0 0 40px #f00, 0 0 50px #f00, 0 0 100px #f00, 1px 1px 0 #f0f;
       }
     </style>
-    <title>Document</title>
+    <title>UnderDice</title>
   </head>
   <body>
     <div
@@ -30,10 +31,18 @@
       <h1 id="gameName">UnderDice</h1>
       <button id="start" href="Battle.html">Start the game</button>
       <div
-        style="display: flex; justify-content: center; align-items: center; flex-direction: column"
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        "
       >
         <img src="./assets/flowey/Flowey_battle_talk.gif" alt="flowey" />
-        <div class="bubbleBelow" style="background-image: url(./assets/spr_blconbelow_0.png)"></div>
+        <div
+          class="bubbleBelow"
+          style="background-image: url(./assets/spr_blconbelow_0.png)"
+        ></div>
       </div>
     </div>
     <script src="src/index.ts" type="module" defer></script>
